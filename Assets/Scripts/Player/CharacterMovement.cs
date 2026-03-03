@@ -1,95 +1,88 @@
-using TMPro.EditorUtilities;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class CharacterMovement : MonoBehaviour
 {
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private Vector3 _groundCheckOffset;
-
     private Vector3 _input;
     private bool _isMoving;
-    private bool _isGrounded;
-    private bool _isFlying;
+    private bool _isGround;
 
     private Rigidbody2D _rigidbody;
-    private CharacterAnimation _animations;
+    private CharacterAnimations _animations;
     [SerializeField] private SpriteRenderer _characterSprite;
-    
-    void Start()
+
+    private void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
-        _animations = GetComponent<CharacterAnimation>();
-    }
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        //if (collision.gameObject.tag == "Enemy")
-       //{
-            //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        //}
+        _animations = GetComponentInChildren<CharacterAnimations>();
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         Move();
         CheckGround();
+
+        // ? ������ ������ �� Space
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (_isGrounded)
-            {
-                Jump();
-                _animations.Jump();
-            }
+            Jump();
+            _animations.Jump();
         }
+
         _animations.IsMoving = _isMoving;
         _animations.IsFlying = IsFlying();
-    }
-
-    private bool IsFlying()
-    {
-        if (_rigidbody.linearVelocity.y < 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private void CheckGround()
-    {
-        float rayLength = 0.5f;
-        Vector3 rayStartPosition = transform.position + _groundCheckOffset;
-
-        RaycastHit2D hit = Physics2D.Raycast(rayStartPosition, Vector2.down, rayLength); 
-
-        if (hit.collider != null)
-        {
-            _isGrounded = hit.collider.CompareTag("Ground");
-        }
-        else
-        {
-            _isGrounded = false;
-        }
     }
 
     private void Move()
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
-        transform.position += _input * _speed * Time.deltaTime;
-        _isMoving=_input.x !=0 ? true : false;
 
-        if(_isMoving)
+        // ? �������� ����� Rigidbody (�� ������ ������)
+        _rigidbody.linearVelocity = new Vector2(_input.x * _speed, _rigidbody.linearVelocity.y);
+
+        _isMoving = _input.x != 0;
+
+        if (_input.x != 0)
         {
             _characterSprite.flipX = _input.x > 0 ? false : true;
         }
-
-        _animations.IsMoving = _isMoving;
     }
+
+    private void CheckGround()
+    {
+        float rayLength = 0.3f;
+        Vector3 rayStartPosition = transform.position + _groundCheckOffset;
+
+        // ? ��������� Raycast
+        RaycastHit2D hit = Physics2D.Raycast(rayStartPosition, Vector3.down, rayLength);
+
+        if (hit.collider != null)
+        {
+            _isGround = hit.collider.CompareTag("Ground");
+        }
+        else
+        {
+            _isGround = false;
+        }
+
+        // ?? ��� ������� (������� ��� � Scene view)
+        Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, Color.red);
+    }
+
+    private bool IsFlying()
+    {
+        // ? � ������� = �� �� �����
+        return !_isGround;
+    }
+
     private void Jump()
     {
-        _rigidbody.AddForce(transform.up * _jumpForce,ForceMode2D.Impulse);
+        // ? ������ ������ �� �����
+        if (_isGround)
+        {
+            _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
+        }
     }
 }

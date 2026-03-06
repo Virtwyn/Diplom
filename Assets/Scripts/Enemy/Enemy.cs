@@ -1,30 +1,23 @@
 using UnityEngine;
-using UnityEngine.Windows;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer _characterSprite;
-    [SerializeField] private float movementSpeed;
-    [SerializeField] private float startMovementTime;
-    private float movementTime;
-
+    public int maxHealth = 100;
+    int currentHealth;
     void Start()
     {
-        movementTime = startMovementTime / 2;
+        currentHealth = maxHealth;
     }
-    void Update()
+    public void TakeDamege(int damege)
     {
-        if (movementTime > 0f)
-        { 
-            movementTime -= Time.deltaTime;
-        }
-        else
+        currentHealth -= damege;
+        if(currentHealth <= 0)
         {
-            movementSpeed = -movementSpeed;
-            movementTime = startMovementTime;
-            _characterSprite.flipX = !_characterSprite.flipX;
+            Die();
         }
-        Vector2 movementVec = new Vector2(1f, 0f);
-        transform.Translate(movementVec * movementSpeed * Time.deltaTime);
+    }
+    void Die()
+    {
+        Debug.Log("Умер");
     }
 }

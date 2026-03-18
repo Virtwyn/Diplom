@@ -33,8 +33,23 @@ public class CharacterMovement : MonoBehaviour
         {
             Jump();
         }
+            if (Input.GetKeyDown(KeyCode.Space) && _isGrounded)
+            {
+                _animations.Jump();
+            }
+        UpdateFlyingState();
         _animations.IsMoving = _isMoving;
-        _animations.IsFlying = IsFlying();
+    }
+    private void UpdateFlyingState()
+    {
+        if (_isGrounded)
+        {
+            _animations.IsFlying = false;
+        }
+        else if(_rigidbody.linearVelocity.y < 0)
+        {
+            _animations.IsFlying = true;
+        }
     }
 
     private void Move()

@@ -15,6 +15,8 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private SpriteRenderer _playerSprite;
      private Vector3 _attackPosition;
 
+    private HealthSystem currentHealth;
+
     private void Start()
     {
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
@@ -41,7 +43,7 @@ public class PlayerCombat : MonoBehaviour
     {
         if (_playerSprite != null && AttackPoint != null)
         {
-            float direction = _playerSprite.flipX ? -1f : 1f;
+            float direction = _playerSprite.flipX ? 0.3f : -0.3f;
             AttackPoint.position = transform.position + new Vector3(_attackPosition.x * direction, _attackPosition.y, 0);
         }
     }
@@ -63,5 +65,9 @@ public class PlayerCombat : MonoBehaviour
         if (AttackPoint == null)
             return;
         Gizmos.DrawWireSphere(AttackPoint.position, AttackRange);
+    }
+
+    void TakeDamage()
+    {
     }
 }

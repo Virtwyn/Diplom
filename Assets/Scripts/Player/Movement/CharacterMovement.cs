@@ -64,10 +64,10 @@ public class CharacterMovement : MonoBehaviour
         }
     }
 
-    private bool IsFlying()
-    {
-        return !_isGrounded;
-    }
+    //private bool IsFlying()
+    //{
+    //    return !_isGrounded;
+    //}
 
     private void CheckGround()
     {

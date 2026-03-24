@@ -2,43 +2,118 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer _characterSprite;
-    [SerializeField] private float movementSpeed;
-    [SerializeField] private float startMovementTime;
-    private float movementTime;
+    [Header("Передвижение")]
+    public static float speed=4;
+    public int positionOfPatrol;
+    public float stoppingDistance;
 
-    public int maxHealth = 100;
-    int currentHealth;
+    [Header("Обнаружение игрока")]
+    public float maxVerticalDistance;
+
+    public Transform point;
+    bool moveingRight;
+    [SerializeField] private SpriteRenderer _characterSprite;
+
+    Transform player;
+
+    bool chill = false;
+    bool angry = false;
+    bool goBack = false;
+
     void Start()
     {
-        currentHealth = maxHealth;
-        movementTime = startMovementTime / 2;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
     }
+
     void Update()
     {
-        if (movementTime > 0f)
+        float verticalDiff = Mathf.Abs(transform.position.y - player.position.y);
+        bool playerOnSameLevel = verticalDiff <= maxVerticalDistance;
+
+        if (Vector2.Distance(transform.position, point.position) < positionOfPatrol && !angry)
         {
-            movementTime -= Time.deltaTime;
+            chill = true;
+        }
+
+        if (Vector2.Distance(transform.position, player.position) < stoppingDistance && playerOnSameLevel)
+        {
+            angry = true;
+            chill = false;
+            goBack = false;
+        }
+
+        if (Vector2.Distance(transform.position, player.position) > stoppingDistance || !playerOnSameLevel)
+        {
+            goBack = true;
+            angry = false;
+        }
+
+        if (chill)
+        {
+            Chill();
+        }
+        else if (angry)
+        {
+            Angry();
+        }
+        else if (goBack)
+        {
+            Goback();
+        }
+    }
+
+    void Chill()
+    {
+        if (transform.position.x > point.position.x + positionOfPatrol)
+        {
+            moveingRight = false;
+            _characterSprite.flipX = false;
+        }
+        else if (transform.position.x < point.position.x - positionOfPatrol)
+        {
+            moveingRight = true;
+            _characterSprite.flipX = true;
+        }
+
+        if (moveingRight)
+        {
+            transform.position = new Vector2(transform.position.x + speed * Time.deltaTime, transform.position.y);
         }
         else
         {
-            movementSpeed = -movementSpeed;
-            movementTime = startMovementTime;
-            _characterSprite.flipX = !_characterSprite.flipX;
+            transform.position = new Vector2(transform.position.x - speed * Time.deltaTime, transform.position.y);
         }
-        Vector2 movementVec = new Vector2(1f, 0f);
-        transform.Translate(movementVec * movementSpeed * Time.deltaTime);
     }
-    public void TakeDamege(int damege)
+
+    void Angry()
     {
-        currentHealth -= damege;
-        if(currentHealth <= 0)
+        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+
+        // Поворот к игроку
+        if (player.position.x < transform.position.x)
         {
-            Die();
+            _characterSprite.flipX = false;
+        }
+        else if (player.position.x > transform.position.x)
+        {
+            _characterSprite.flipX = true;
         }
     }
-    void Die()
+
+    void Goback()
     {
-        Debug.Log("����");
+        transform.position = Vector2.MoveTowards(transform.position, point.position, speed * Time.deltaTime);
+
+        // Поворот к точке
+        if (point.position.x < transform.position.x)
+        {
+            _characterSprite.flipX = false;
+            moveingRight = false;
+        }
+        else if (point.position.x > transform.position.x)
+        {
+            _characterSprite.flipX = true;
+            moveingRight = true;
+        }
     }
 }

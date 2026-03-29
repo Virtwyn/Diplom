@@ -21,10 +21,7 @@ public class PlayerCombat : MonoBehaviour
     private void Start()
     {
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
-        if (AttackPoint != null)
-        {
-            _attackOffset = AttackPoint.localPosition;
-        }
+        _attackOffset = AttackPoint.localPosition;
     }
 
     void Update()
@@ -48,16 +45,8 @@ public class PlayerCombat : MonoBehaviour
 
     void UpdateAttackPointPosition()
     {
-        if (_playerSprite != null && AttackPoint != null)
-        {
-
             float direction = _playerSprite.flipX ? -1f : 1f;
-            AttackPoint.position = transform.position + new Vector3(
-                _attackOffset.x * direction,
-                _attackOffset.y,
-                0
-            );
-        }
+            AttackPoint.position = transform.position + new Vector3(_attackOffset.x * direction, _attackOffset.y,0);
     }
 
     public void Attack()
@@ -70,17 +59,12 @@ public class PlayerCombat : MonoBehaviour
         foreach (Collider2D enemy in hitEnemies)
         {
             EnemyCombat enemyScript = enemy.GetComponent<EnemyCombat>();
-            if (enemyScript != null)
-            {
                 enemyScript.TakeDamage(AttackDamage);
-            }
         }
     }
 
     void OnDrawGizmosSelected()
     {
-        if (AttackPoint == null)
-            return;
         Gizmos.DrawWireSphere(AttackPoint.position, AttackRange);
     }
 }

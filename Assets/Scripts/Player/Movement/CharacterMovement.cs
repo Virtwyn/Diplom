@@ -1,12 +1,25 @@
 using UnityEngine;
+using System.Collections;
 
 public class CharacterMovement : MonoBehaviour
 {
+    [Header("Передвижение")]
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private Vector3 _groundCheckOffset;
     [SerializeField] private LayerMask groundMask;
 
+    [Header("Рывок")]
+    public int LungeImpuls = 15;
+    public float LungeDuration = 0.3f;
+    public float LungeCooldown = 1f;
+    public float LungeInvincibilityTime = 0.5f;
+    [Tooltip("Насколько уменьшить коллайдер (0.5 = в 2 раза)")]
+    public float lungeColliderScale = 0.6f;
+    [Tooltip("Слой врагов, сквозь которые можно проходить")]
+    public LayerMask enemyLayer;
+
+    [Header("Компоненты")]
     private Vector3 _input;
     private bool _isMoving;
     private bool _isGrounded;
@@ -14,13 +27,35 @@ public class CharacterMovement : MonoBehaviour
     private Rigidbody2D _rigidbody;
     private CharacterAnimations _animations;
     [SerializeField] private SpriteRenderer _characterSprite;
+    public Animator anim;
+    [SerializeField] private HealthSystem playerHealth;
+
+    // Флаги рывка и неуязвимости
+    private bool lockLunge = false;
+    private bool isLunging = false;
+    private bool isInvincible = false;
+    private float invincibilityTimer = 0f;
+
+    // Физика
+    private Collider2D _playerCollider;
+    private Vector3 _originalColliderSize;
+    private int _playerLayer;
 
     private void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
         _animations = GetComponentInChildren<CharacterAnimations>();
         _characterSprite = GetComponent<SpriteRenderer>();
+        _playerCollider = GetComponent<Collider2D>();
+        if (_playerCollider != null)
+            _originalColliderSize = _playerCollider.bounds.size;
+
+        _playerLayer = gameObject.layer;
+
+        if (playerHealth == null)
+            playerHealth = GetComponent<HealthSystem>();
     }
+
     private void FixedUpdate()
     {
         CheckGround();
@@ -29,24 +64,44 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging )
+        {
+            StartCoroutine(LungeCoroutine());
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded)
         {
             Jump();
+            _animations.Jump();
         }
-            if (Input.GetKeyDown(KeyCode.Space) && _isGrounded)
-            {
-                _animations.Jump();
-            }
+
         UpdateFlyingState();
+        UpdateInvincibility();
+
         _animations.IsMoving = _isMoving;
     }
+    void UpdateInvincibility()
+    {
+        if (isInvincible)
+        {
+            invincibilityTimer -= Time.deltaTime;
+
+            if (invincibilityTimer <= 0f)
+            {
+                isInvincible = false;
+                if (_characterSprite != null)
+                    _characterSprite.color = new Color(1f, 1f, 1f, 1f);
+            }
+        }
+    }
+
     private void UpdateFlyingState()
     {
         if (_isGrounded)
         {
             _animations.IsFlying = false;
         }
-        else if(_rigidbody.linearVelocity.y < 0)
+        else if (_rigidbody.linearVelocity.y < 0)
         {
             _animations.IsFlying = true;
         }
@@ -56,18 +111,17 @@ public class CharacterMovement : MonoBehaviour
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
         _isMoving = _input.x != 0;
-        _rigidbody.linearVelocity = new Vector2(_input.x * _speed, _rigidbody.linearVelocity.y);
 
-        if (_isMoving)
+        if (!isLunging)
+        {
+            _rigidbody.linearVelocity = new Vector2(_input.x * _speed, _rigidbody.linearVelocity.y);
+        }
+
+        if (_isMoving && !isLunging)
         {
             _characterSprite.flipX = _input.x > 0 ? false : true;
         }
     }
-
-    //private bool IsFlying()
-    //{
-    //    return !_isGrounded;
-    //}
 
     private void CheckGround()
     {
@@ -75,14 +129,8 @@ public class CharacterMovement : MonoBehaviour
         Vector3 rayStartPosition = transform.position + _groundCheckOffset;
         RaycastHit2D hit = Physics2D.Raycast(rayStartPosition, Vector3.down, rayLength, groundMask);
 
-        if (hit.collider != null && hit.collider.CompareTag("Ground"))
-        {
-            _isGrounded = true;
-        }
-        else
-        {
-            _isGrounded = false;
-        }
+        _isGrounded = hit.collider != null && hit.collider.CompareTag("Ground");
+
         Color rayColor = _isGrounded ? Color.green : Color.red;
         Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);
     }
@@ -92,7 +140,44 @@ public class CharacterMovement : MonoBehaviour
         if (_isGrounded)
         {
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
-            _animations.Jump();
         }
+    }
+    IEnumerator LungeCoroutine()
+    {
+        lockLunge = true;
+        isLunging = true;
+
+        // Направление рывка
+        float direction = _input.x != 0 ? Mathf.Sign(_input.x) : (_characterSprite.flipX ? -1f : 1f);
+        _characterSprite.flipX = direction < 0;
+        _rigidbody.simulated = false;
+        if (_playerCollider != null)
+            _playerCollider.enabled = false;
+        anim.Play("Roll");
+
+        isInvincible = true;
+        invincibilityTimer = LungeInvincibilityTime;
+
+        float elapsedTime = 0f;
+        Vector2 targetVelocity = new Vector2(direction * LungeImpuls, 0);
+
+        while (elapsedTime < LungeDuration)
+        {
+            float t = elapsedTime / LungeDuration;
+            transform.position += (Vector3)(targetVelocity * t * Time.deltaTime);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        _rigidbody.simulated = true;
+        if (_playerCollider != null)
+            _playerCollider.enabled = true;
+
+        isLunging = false;
+        yield return new WaitForSeconds(LungeCooldown);
+        lockLunge = false;
+    }
+    public bool IsInvincible()
+    {
+        return isInvincible;
     }
 }

@@ -27,8 +27,6 @@ public class EnemyCombat : MonoBehaviour
     {
         //Enemy speed = player.GetComponent<Enemy>();
         anim = GetComponent<Animator>();
-
-        // ← ДОБАВЛЕНО: инициализация
         if (_enemySprite == null)
             _enemySprite = GetComponentInChildren<SpriteRenderer>();
         if (attackPos != null)
@@ -97,7 +95,7 @@ public class EnemyCombat : MonoBehaviour
         anim.SetBool("Attack", false);
         for (int i = 0; i < playerCollider.Length; i++)
         {
-            playerCollider[i].GetComponent<HealthSystem>().TakeDamage(damage);
+            playerCollider[i].GetComponent<HealthSystem>().TakeDamage(damage, this.transform);
         }
 
     }
@@ -107,11 +105,7 @@ public class EnemyCombat : MonoBehaviour
         {
             float direction = _enemySprite.flipX ? -1f : 1f;
             float offsetX = Mathf.Abs(_attackOffset.x);
-            attackPos.localPosition = new Vector3(
-                -offsetX * direction,
-                _attackOffset.y,
-                0
-            );
+            attackPos.localPosition = new Vector3( -offsetX * direction, _attackOffset.y, 0);
         }
     }
     public void TakeDamage(int damage)

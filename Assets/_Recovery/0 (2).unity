@@ -4007,7 +4007,7 @@ CompositeCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 6200000, guid: f7fcbea62991c1542a9baba387eba2de, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -4971,7 +4971,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
   hp: 40
-  damage: 10
+  damage: 5
   speed: {fileID: 1221473418}
   _enemySprite: {fileID: 1221473421}
   invincibilityTime: 0.05
@@ -5997,13 +5997,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79f93514c2440b14f91567ed13917331, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterMovement
-  _speed: 5
+  _speed: 4
   _jumpForce: 8
   _groundCheckOffset: {x: 0, y: 0.05, z: 0}
   groundMask:
     serializedVersion: 2
     m_Bits: 1
-  LungeImpuls: 15
+  LungeImpuls: 7
   LungeDuration: 0.3
   LungeCooldown: 1
   LungeInvincibilityTime: 0.5
@@ -6109,8 +6109,6 @@ MonoBehaviour:
   healthSlider: {fileID: 571948024}
   healthBarValueText: {fileID: 1336127579}
   _spriteRenderer: {fileID: 1839473620}
-  anim: {fileID: 1839473617}
-  _characterSprite: {fileID: 1839473620}
   maxHealth: 100
   currentHealth: 100
   invincibilityTime: 1

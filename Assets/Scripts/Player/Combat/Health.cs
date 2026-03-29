@@ -9,6 +9,8 @@ public class HealthSystem : MonoBehaviour
     public Slider healthSlider;
     public TextMeshProUGUI healthBarValueText;
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    public Animator anim;
+    public SpriteRenderer _characterSprite;
 
     [Header("Показатели")]
     public int maxHealth;
@@ -17,6 +19,10 @@ public class HealthSystem : MonoBehaviour
     [SerializeField] private float invincibilityTime = 1;
     private bool isInvincible;
     private float invincibilityTimer;
+
+    [Header("Щит")]
+    private bool block = true;
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -25,6 +31,7 @@ public class HealthSystem : MonoBehaviour
     }
     void Update()
     {
+        //Block();
         if (isInvincible)
         {
             invincibilityTimer -= Time.deltaTime;
@@ -43,7 +50,7 @@ public class HealthSystem : MonoBehaviour
         healthSlider.value=currentHealth;
         healthSlider.maxValue = maxHealth; 
     }
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Transform attacker)
     {
         if (isInvincible) return;
         {
@@ -62,6 +69,24 @@ public class HealthSystem : MonoBehaviour
     }
     private void Die()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        anim.Play("Death");
+        GetComponent<CharacterMovement>().enabled=false;
+        GetComponent<PlayerCombat>().enabled = false;
+        gameObject.tag = "Untagged";
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+    bool IsAttackFromFront(Transform enemy)
+    {
+        int playerLookDirection = _characterSprite.flipX ? -1 : 1;
+        float directionToEnemy = Mathf.Sign(enemy.position.x - transform.position.x);
+        return playerLookDirection == directionToEnemy;
+    }
+    //void Block()
+    //{
+    //    if (Input.GetMouseButtonDown(1))
+    //    {
+    //        anim.Play("Block");
+    //        block = true;
+    //    }
+    //}
 }

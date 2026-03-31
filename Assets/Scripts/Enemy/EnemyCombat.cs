@@ -27,11 +27,9 @@ public class EnemyCombat : MonoBehaviour
     {
         //Enemy speed = player.GetComponent<Enemy>();
         anim = GetComponent<Animator>();
-        if (_enemySprite == null)
-            _enemySprite = GetComponentInChildren<SpriteRenderer>();
-        if (attackPos != null)
-            _attackOffset = attackPos.localPosition;
-        Debug.Log("Offset: " + _attackOffset);
+        _enemySprite = GetComponentInChildren<SpriteRenderer>();
+        _attackOffset = attackPos.localPosition;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
     void Update()
@@ -101,12 +99,9 @@ public class EnemyCombat : MonoBehaviour
     }
     void UpdateAttackPointPosition()
     {
-        if (_enemySprite != null && attackPos != null)
-        {
             float direction = _enemySprite.flipX ? -1f : 1f;
             float offsetX = Mathf.Abs(_attackOffset.x);
             attackPos.localPosition = new Vector3( -offsetX * direction, _attackOffset.y, 0);
-        }
     }
     public void TakeDamage(int damage)
     {
@@ -116,7 +111,11 @@ public class EnemyCombat : MonoBehaviour
 
             if (hp <= 0)
             {
-                Destroy(gameObject);
+                GetComponent<EnemyCombat>().enabled = false;
+                GetComponent<Enemy>().enabled = false;
+                anim.Play("Death");
+                gameObject.tag = "Untagged";
+                //Destroy(gameObject);
             }
             else
             {

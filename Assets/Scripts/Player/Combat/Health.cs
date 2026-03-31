@@ -11,6 +11,7 @@ public class HealthSystem : MonoBehaviour
     [SerializeField] private SpriteRenderer _spriteRenderer;
     public Animator anim;
     public SpriteRenderer _characterSprite;
+    Vector2 startPos;
 
     [Header("Показатели")]
     public int maxHealth;
@@ -25,6 +26,7 @@ public class HealthSystem : MonoBehaviour
 
     void Start()
     {
+        startPos = transform.position;
         currentHealth = maxHealth;
         healthSlider.maxValue = maxHealth;
         healthSlider.value = currentHealth;
@@ -45,7 +47,7 @@ public class HealthSystem : MonoBehaviour
             }
         }
         if (transform.position.y < -95)
-            Die();
+            DieVoid();
         healthBarValueText.text = currentHealth.ToString()+ "/" + maxHealth.ToString();
         healthSlider.value=currentHealth;
         healthSlider.maxValue = maxHealth; 
@@ -73,14 +75,16 @@ public class HealthSystem : MonoBehaviour
         GetComponent<CharacterMovement>().enabled=false;
         GetComponent<PlayerCombat>().enabled = false;
         gameObject.tag = "Untagged";
+        Invoke("Respawn", 2f);
+
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-    bool IsAttackFromFront(Transform enemy)
-    {
-        int playerLookDirection = _characterSprite.flipX ? -1 : 1;
-        float directionToEnemy = Mathf.Sign(enemy.position.x - transform.position.x);
-        return playerLookDirection == directionToEnemy;
-    }
+    //bool IsAttackFromFront(Transform enemy)
+    //{
+    //    int playerLookDirection = _characterSprite.flipX ? -1 : 1;
+    //    float directionToEnemy = Mathf.Sign(enemy.position.x - transform.position.x);
+    //    return playerLookDirection == directionToEnemy;
+    //}
     //void Block()
     //{
     //    if (Input.GetMouseButtonDown(1))
@@ -89,4 +93,13 @@ public class HealthSystem : MonoBehaviour
     //        block = true;
     //    }
     //}
+    void Respawn()
+    {
+        //transform.position = startPos;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    void DieVoid()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
 }

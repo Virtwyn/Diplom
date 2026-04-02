@@ -1,8 +1,11 @@
 using UnityEngine;
 using System.Collections;
 
-public class CharacterMovement : MonoBehaviour
+public class CharacterMovement : Sounds
 {
+    [Header("Звуки")]
+    public float walkSoundInterval = 0.4f;  
+    private float _walkSoundTimer = 0f;     
     [Header("Передвижение")]
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
@@ -117,9 +120,20 @@ public class CharacterMovement : MonoBehaviour
             _rigidbody.linearVelocity = new Vector2(_input.x * _speed, _rigidbody.linearVelocity.y);
         }
 
-        if (_isMoving && !isLunging)
+        if (_isMoving && !isLunging && _isGrounded)
         {
             _characterSprite.flipX = _input.x > 0 ? false : true;
+            _walkSoundTimer += Time.deltaTime;
+
+            if (_walkSoundTimer >= walkSoundInterval)
+            {
+                PlaySound(sounds[0]);
+                _walkSoundTimer = 0f;
+            }
+        }
+        else
+        {
+            _walkSoundTimer = 0f;
         }
     }
 

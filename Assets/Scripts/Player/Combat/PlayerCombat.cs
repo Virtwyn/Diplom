@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerCombat : MonoBehaviour
+public class PlayerCombat : Sounds
 {
     public Animator animator;
     public Transform AttackPoint;
@@ -8,6 +8,9 @@ public class PlayerCombat : MonoBehaviour
     public int AttackDamage = 40;
     public LayerMask enemyLayers;
     public float comboTime = 0.5f;
+    public CharacterMovement _speed;
+
+    public float attackDuration = 0.6f;
 
     private int comboCount = 0;
     private float lastAttackTime;
@@ -15,31 +18,54 @@ public class PlayerCombat : MonoBehaviour
     float nextAttackTime = 0f;
 
     [SerializeField] private SpriteRenderer _playerSprite;
+    private CharacterMovement _movement;
 
     private Vector3 _attackOffset;
 
+    private bool _isGrounded;
+    [SerializeField] private LayerMask groundMask;
+    [SerializeField] private Vector3 _groundCheckOffset;
+
+
     private void Start()
     {
+
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
         _attackOffset = AttackPoint.localPosition;
+        _movement = GetComponent<CharacterMovement>();
     }
-
+    private void FixedUpdate()
+    {
+        CheckGround();
+    }
     void Update()
     {
-        if (Time.time - lastAttackTime > comboTime)
+        attackDuration += Time.deltaTime;
+        if (_isGrounded)
         {
-            comboCount = 0;
-        }
-
-        if (Time.time >= nextAttackTime)
-        {
-            UpdateAttackPointPosition();
-
-            if (Input.GetMouseButtonDown(0))
+            
+            if (Time.time - lastAttackTime > comboTime)
             {
-                Attack();
-                nextAttackTime = Time.time + 1f / AttackRate;
+                comboCount = 0;
             }
+            if (Time.time >= nextAttackTime)
+            {
+                UpdateAttackPointPosition();
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    _movement._rigidbody.linearVelocity = new Vector2(0, _movement._rigidbody.linearVelocity.y);
+                    _movement.IsAttacking = true;
+                    attackDuration = 0;
+                    GetComponent<CharacterMovement>().enabled=false;
+                    Attack();
+                    nextAttackTime = Time.time + 1f / AttackRate;
+                }
+            }
+        }
+        if (attackDuration >= 0.5f)
+        {
+            StopAttacking();
         }
     }
 
@@ -51,6 +77,7 @@ public class PlayerCombat : MonoBehaviour
 
     public void Attack()
     {
+        //_movement._rigidbody.AddForce(transform.up * 2f, ForceMode2D.Impulse);
         comboCount = (comboCount + 1) % 3;
         lastAttackTime = Time.time;
         animator.SetTrigger("Attack" + (comboCount + 1));
@@ -61,10 +88,29 @@ public class PlayerCombat : MonoBehaviour
             EnemyCombat enemyScript = enemy.GetComponent<EnemyCombat>();
                 enemyScript.TakeDamage(AttackDamage);
         }
+        PlaySound(sounds[0], volume:0.05f);
+
+        //Invoke(nameof(StopAttacking), attackDuration);
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(AttackPoint.position, AttackRange);
+    }
+    private void CheckGround()
+    {
+        float rayLength = 0.1f;
+        Vector3 rayStartPosition = transform.position + _groundCheckOffset;
+        RaycastHit2D hit = Physics2D.Raycast(rayStartPosition, Vector3.down, rayLength, groundMask);
+
+        _isGrounded = hit.collider != null && hit.collider.CompareTag("Ground");
+
+        Color rayColor = _isGrounded ? Color.green : Color.red;
+        Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);
+    }
+    void StopAttacking()
+    {
+            GetComponent<CharacterMovement>().enabled = true;
+            _movement.IsAttacking = false;
     }
 }

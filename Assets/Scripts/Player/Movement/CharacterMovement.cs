@@ -1,11 +1,13 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Audio;
 
 public class CharacterMovement : Sounds
 {
     [Header("Звуки")]
-    public float walkSoundInterval = 0.4f;  
-    private float _walkSoundTimer = 0f;     
+    public float walkSoundInterval = 0.4f;
+    private float _walkSoundTimer = 0f;
+    private bool _wasGrounded = false;
     [Header("Передвижение")]
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
@@ -27,22 +29,20 @@ public class CharacterMovement : Sounds
     private bool _isMoving;
     private bool _isGrounded;
 
-    private Rigidbody2D _rigidbody;
+    public Rigidbody2D _rigidbody;
     private CharacterAnimations _animations;
     [SerializeField] private SpriteRenderer _characterSprite;
     public Animator anim;
     [SerializeField] private HealthSystem playerHealth;
-
-    // Флаги рывка и неуязвимости
     private bool lockLunge = false;
     private bool isLunging = false;
     private bool isInvincible = false;
     private float invincibilityTimer = 0f;
-
-    // Физика
     private Collider2D _playerCollider;
     private Vector3 _originalColliderSize;
     private int _playerLayer;
+
+    public bool IsAttacking { get; set; } = false;
 
     private void Start()
     {
@@ -61,13 +61,16 @@ public class CharacterMovement : Sounds
 
     private void FixedUpdate()
     {
+        _wasGrounded = _isGrounded;
+
         CheckGround();
         Move();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging )
+        CheckLanding();
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging)
         {
             StartCoroutine(LungeCoroutine());
         }
@@ -114,18 +117,23 @@ public class CharacterMovement : Sounds
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
         _isMoving = _input.x != 0;
-
-        if (!isLunging)
+        if (_input.x != 0 && !isLunging)
+        {
+            _characterSprite.flipX = _input.x > 0 ? false : true;
+        }
+        if (!isLunging && !IsAttacking)
         {
             _rigidbody.linearVelocity = new Vector2(_input.x * _speed, _rigidbody.linearVelocity.y);
         }
-
-        if (_isMoving && !isLunging && _isGrounded)
+        else if (IsAttacking && !isLunging)
         {
-            _characterSprite.flipX = _input.x > 0 ? false : true;
+            _rigidbody.linearVelocity = new Vector2(0, _rigidbody.linearVelocity.y);
+        }
+        if (_isMoving && !isLunging && _isGrounded && !IsAttacking)
+        {
             _walkSoundTimer += Time.deltaTime;
 
-            if (_walkSoundTimer >= walkSoundInterval)
+            if (_walkSoundTimer >= walkSoundInterval && !isLunging)
             {
                 PlaySound(sounds[0]);
                 _walkSoundTimer = 0f;
@@ -133,11 +141,11 @@ public class CharacterMovement : Sounds
         }
         else
         {
-            _walkSoundTimer = 0f;
+            _walkSoundTimer = 0.4f;
         }
     }
 
-    private void CheckGround()
+    public void CheckGround()
     {
         float rayLength = 0.1f;
         Vector3 rayStartPosition = transform.position + _groundCheckOffset;
@@ -146,13 +154,14 @@ public class CharacterMovement : Sounds
         _isGrounded = hit.collider != null && hit.collider.CompareTag("Ground");
 
         Color rayColor = _isGrounded ? Color.green : Color.red;
-        Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);
+        Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);    
     }
 
     private void Jump()
     {
         if (_isGrounded)
         {
+            PlaySound(sounds[1]);
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
         }
     }
@@ -160,8 +169,6 @@ public class CharacterMovement : Sounds
     {
         lockLunge = true;
         isLunging = true;
-
-        // Направление рывка
         float direction = _input.x != 0 ? Mathf.Sign(_input.x) : (_characterSprite.flipX ? -1f : 1f);
         _characterSprite.flipX = direction < 0;
         _rigidbody.simulated = false;
@@ -193,5 +200,19 @@ public class CharacterMovement : Sounds
     public bool IsInvincible()
     {
         return isInvincible;
+    }
+    void CheckLanding()
+    {
+        if (_isGrounded && !_wasGrounded)
+        {
+            //if ()
+            //{
+            PlaySound(sounds[2], 0.3f);
+            //}
+        }
+    }
+        public bool IsGrounded()
+    {
+        return _isGrounded;
     }
 }

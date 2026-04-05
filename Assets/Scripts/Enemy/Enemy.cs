@@ -3,7 +3,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [Header("Передвижение")]
-    public static float speed=4;
+    public float speed=4;
     public int positionOfPatrol;
     public float stoppingDistance;
 

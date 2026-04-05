@@ -12,6 +12,7 @@ public class HealthSystem : MonoBehaviour
     public Animator anim;
     public SpriteRenderer _characterSprite;
     Vector2 startPos;
+    public Rigidbody2D rbPlayer;
 
     [Header("Показатели")]
     public int maxHealth;
@@ -33,6 +34,7 @@ public class HealthSystem : MonoBehaviour
     }
     void Update()
     {
+        rbPlayer.WakeUp();
         //Block();
         if (isInvincible)
         {

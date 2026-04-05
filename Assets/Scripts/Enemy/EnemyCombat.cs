@@ -7,7 +7,7 @@ public class EnemyCombat : MonoBehaviour
     public int damage;
     public Enemy speed;
     private Transform player;
-    private Animator anim;
+    [SerializeField] private Animator anim;
     private Vector3 _attackOffset;
     [SerializeField] private SpriteRenderer _enemySprite;
 
@@ -18,13 +18,18 @@ public class EnemyCombat : MonoBehaviour
     public Transform attackPos;
     public LayerMask playerMask;
     public float radius;
-    public Rigidbody2D rbPlayer;
+    //public Rigidbody2D rbPlayer;
+    public Collider2D enemyCollider;
 
     public float recharge;
     public float startRecharge;
+    
 
+    //public GameObject part;
+    //[SerializeField] private float telegraphDuration = 0.3f;
     void Start()
     {
+        Collider2D enemyCollider = GetComponent<Collider2D>();
         //Enemy speed = player.GetComponent<Enemy>();
         anim = GetComponent<Animator>();
         _enemySprite = GetComponentInChildren<SpriteRenderer>();
@@ -44,13 +49,12 @@ public class EnemyCombat : MonoBehaviour
                 isInvincible = false;
             }
         }
-        rbPlayer.WakeUp();
         recharge += Time.deltaTime;
-        if (Enemy.speed > 0)
+        if (speed.speed > 0)
             anim.SetBool("Run", true);
         if (hp <= 0)
         {
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
     }
     public void OnTriggerStay2D(Collider2D other)
@@ -59,10 +63,16 @@ public class EnemyCombat : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             anim.SetBool("Run", false);
-            Enemy.speed = 0;
-
+            speed.speed = 0;
+            if (recharge >= 2.5)
+            {
+                //AttackSequence();
+            }
             if (recharge >= startRecharge)
             {
+                 
+                //Instantiate(part,transform.position, Quaternion.identity);
+                //part.SetActive(true);
                 anim.SetBool("Attack", true);
                 recharge = 0;
             }
@@ -79,7 +89,7 @@ public class EnemyCombat : MonoBehaviour
         {
             anim.SetBool("Attack", false);
             anim.SetBool("Run", true);
-            Enemy.speed = 4;
+            speed.speed = 4;
         }
     }
     private void OnDrawGizmosSelected()
@@ -89,6 +99,7 @@ public class EnemyCombat : MonoBehaviour
     }
     public void OnAttack()
     {
+        //part.SetActive(false);
         Collider2D[] playerCollider = Physics2D.OverlapCircleAll(attackPos.position, radius, playerMask);
         anim.SetBool("Attack", false);
         for (int i = 0; i < playerCollider.Length; i++)
@@ -115,6 +126,7 @@ public class EnemyCombat : MonoBehaviour
                 GetComponent<Enemy>().enabled = false;
                 anim.Play("Death");
                 gameObject.tag = "Untagged";
+                enemyCollider.enabled = false;
                 //Destroy(gameObject);
             }
             else
@@ -124,5 +136,12 @@ public class EnemyCombat : MonoBehaviour
             }
         }
     }
+    //System.Collections.IEnumerator AttackSequence()
+    //{
+    //    part.SetActive(true);
+    //    part.GetComponent<ParticleSystem>().Play();
+    //    yield return new WaitForSeconds(telegraphDuration);
+    //    part.SetActive(false);
+    //}
 
 }

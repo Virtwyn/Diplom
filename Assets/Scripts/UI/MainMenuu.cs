@@ -1,10 +1,25 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class MainMenuButton : MonoBehaviour
 {
+    [SerializeField] private Pause pauseController;
+
+    private void Awake()
+    {
+        if (pauseController == null)
+        {
+            pauseController = FindFirstObjectByType<Pause>();
+        }
+    }
+
     public void menu()
     {
-        SceneManager.LoadScene("Menu");
+        if (pauseController != null)
+        {
+            pauseController.OpenMenu();
+            return;
+        }
+
+        Time.timeScale = 1f;
     }
 }

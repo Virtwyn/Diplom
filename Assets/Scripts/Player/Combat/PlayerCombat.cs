@@ -26,10 +26,10 @@ public class PlayerCombat : Sounds
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Vector3 _groundCheckOffset;
 
+    CharacterMovement Move;
 
     private void Start()
     {
-
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
         _attackOffset = AttackPoint.localPosition;
         _movement = GetComponent<CharacterMovement>();
@@ -43,7 +43,7 @@ public class PlayerCombat : Sounds
         attackDuration += Time.deltaTime;
         if (_isGrounded)
         {
-            
+
             if (Time.time - lastAttackTime > comboTime)
             {
                 comboCount = 0;
@@ -54,10 +54,11 @@ public class PlayerCombat : Sounds
 
                 if (Input.GetMouseButtonDown(0))
                 {
+                    _movement = GetComponent<CharacterMovement>();
                     _movement._rigidbody.linearVelocity = new Vector2(0, _movement._rigidbody.linearVelocity.y);
                     _movement.IsAttacking = true;
                     attackDuration = 0;
-                    GetComponent<CharacterMovement>().enabled=false;
+                    GetComponent<CharacterMovement>().enabled = false;
                     Attack();
                     nextAttackTime = Time.time + 1f / AttackRate;
                 }
@@ -65,14 +66,14 @@ public class PlayerCombat : Sounds
         }
         if (attackDuration >= 0.5f)
         {
-            StopAttacking();
+            StopAttacking1();
         }
     }
 
     void UpdateAttackPointPosition()
     {
-            float direction = _playerSprite.flipX ? -1f : 1f;
-            AttackPoint.position = transform.position + new Vector3(_attackOffset.x * direction, _attackOffset.y,0);
+        float direction = _playerSprite.flipX ? -1f : 1f;
+        AttackPoint.position = transform.position + new Vector3(_attackOffset.x * direction, _attackOffset.y, 0);
     }
 
     public void Attack()
@@ -86,10 +87,13 @@ public class PlayerCombat : Sounds
         foreach (Collider2D enemy in hitEnemies)
         {
             EnemyCombat enemyScript = enemy.GetComponent<EnemyCombat>();
-                enemyScript.TakeDamage(AttackDamage);
+            enemyScript.TakeDamage(AttackDamage);
         }
-        PlaySound(sounds[0], volume:0.05f);
-
+        PlaySound(sounds[0], volume: 0.05f);
+        if (_movement != null && _movement.IsLunging())
+        {
+            return;
+        }
         //Invoke(nameof(StopAttacking), attackDuration);
     }
 
@@ -108,9 +112,14 @@ public class PlayerCombat : Sounds
         Color rayColor = _isGrounded ? Color.green : Color.red;
         Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);
     }
-    void StopAttacking()
+    void StopAttacking1()
     {
-            GetComponent<CharacterMovement>().enabled = true;
-            _movement.IsAttacking = false;
+        GetComponent<CharacterMovement>().enabled = true;
+        _movement.IsAttacking = false;
+    }
+    void StopAttacking2()
+    {
+        GetComponent<CharacterMovement>().enabled = true;
+        _movement.IsAttacking = false;
     }
 }

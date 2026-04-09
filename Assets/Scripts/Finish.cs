@@ -14,10 +14,10 @@ public class levelUnlocker : MonoBehaviour
     private void UnlockNextLevel()
     {
         int currentScene = SceneManager.GetActiveScene().buildIndex;
-        if (currentScene >= PlayerPrefs.GetInt("Scenes"))
-        {
-            PlayerPrefs.SetInt("Scenes", currentScene + 1);
-        }
-        SceneManager.LoadScene(currentScene + 1);
+        //if (currentScene >= PlayerPrefs.GetInt("Scenes"))
+        //{
+        //    PlayerPrefs.SetInt("Scenes", currentScene + 1);
+        //}
+        SceneManager.LoadScene(currentScene);
     }
 }

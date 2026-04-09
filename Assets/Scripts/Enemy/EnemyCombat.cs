@@ -11,7 +11,7 @@ public class EnemyCombat : MonoBehaviour
     private Vector3 _attackOffset;
     [SerializeField] private SpriteRenderer _enemySprite;
 
-    [SerializeField] private float invincibilityTime = 1;
+    [SerializeField] private float invincibilityTime;
     private bool isInvincible;
     private float invincibilityTimer;
 
@@ -83,6 +83,13 @@ public class EnemyCombat : MonoBehaviour
 
         }
     }
+    public void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            recharge = 0;
+        }
+    }
     public void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
@@ -126,6 +133,10 @@ public class EnemyCombat : MonoBehaviour
                 GetComponent<Enemy>().enabled = false;
                 anim.Play("Death");
                 gameObject.tag = "Untagged";
+                Rigidbody2D rb = GetComponent<Rigidbody2D>();
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+                rb.bodyType = RigidbodyType2D.Static;
                 enemyCollider.enabled = false;
                 //Destroy(gameObject);
             }

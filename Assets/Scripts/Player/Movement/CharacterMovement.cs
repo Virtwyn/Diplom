@@ -70,7 +70,7 @@ public class CharacterMovement : Sounds
     private void Update()
     {
         CheckLanding();
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging && _isGrounded)
         {
             StartCoroutine(LungeCoroutine());
         }
@@ -113,7 +113,7 @@ public class CharacterMovement : Sounds
         }
     }
 
-    private void Move()
+    public void Move()
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
         _isMoving = _input.x != 0;
@@ -170,11 +170,11 @@ public class CharacterMovement : Sounds
         lockLunge = true;
         isLunging = true;
         float direction = _input.x != 0 ? Mathf.Sign(_input.x) : (_characterSprite.flipX ? -1f : 1f);
-        _characterSprite.flipX = direction < 0;
         _rigidbody.simulated = false;
         if (_playerCollider != null)
             _playerCollider.enabled = false;
-        anim.Play("Roll");
+         _characterSprite.flipX = direction < 0;
+       anim.Play("Roll");
 
         isInvincible = true;
         invincibilityTimer = LungeInvincibilityTime;
@@ -207,12 +207,16 @@ public class CharacterMovement : Sounds
         {
             //if ()
             //{
-            PlaySound(sounds[2], 0.3f);
+            PlaySound(sounds[2], 0.1f);
             //}
         }
     }
         public bool IsGrounded()
     {
         return _isGrounded;
+    }
+    public bool IsLunging()
+    {
+        return isLunging;
     }
 }

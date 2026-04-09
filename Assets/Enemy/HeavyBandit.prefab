@@ -5090,7 +5090,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5601284096253959063}
-  m_BodyType: 2
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -5213,7 +5213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c105893a458e0e14dbcc9431fa4e4e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
-  hp: 80
+  hp: 90
   damage: 15
   speed: {fileID: 6170984964956998629}
   anim: {fileID: 1864466429772023129}
@@ -5241,7 +5241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 2.5
   positionOfPatrol: 2
-  stoppingDistance: 8
+  stoppingDistance: 6
   maxVerticalDistance: 0.6
   point: {fileID: 0}
   _characterSprite: {fileID: 4441813651734877593}

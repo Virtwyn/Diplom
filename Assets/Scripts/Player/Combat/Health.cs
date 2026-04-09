@@ -14,16 +14,13 @@ public class HealthSystem : MonoBehaviour
     Vector2 startPos;
     public Rigidbody2D rbPlayer;
 
-    [Header("Показатели")]
+    [Header("Показатели здоровья")]
     public int maxHealth;
     public int currentHealth;
 
     [SerializeField] private float invincibilityTime = 1;
     private bool isInvincible;
     private float invincibilityTimer;
-
-    [Header("Щит")]
-    private bool block = true;
 
     void Start()
     {
@@ -35,7 +32,6 @@ public class HealthSystem : MonoBehaviour
     void Update()
     {
         rbPlayer.WakeUp();
-        //Block();
         if (isInvincible)
         {
             invincibilityTimer -= Time.deltaTime;
@@ -48,12 +44,13 @@ public class HealthSystem : MonoBehaviour
                 _spriteRenderer.color = new Color(1f, 1f, 1f, 1f);
             }
         }
-        if (transform.position.y < -95)
-            DieVoid();
+        if (transform.position.y < -12)
+            Respawn();
         healthBarValueText.text = currentHealth.ToString()+ "/" + maxHealth.ToString();
-        healthSlider.value=currentHealth;
+        healthSlider.value = currentHealth;
         healthSlider.maxValue = maxHealth; 
     }
+    //Получение урона
     public void TakeDamage(int damage, Transform attacker)
     {
         if (isInvincible) return;
@@ -71,6 +68,7 @@ public class HealthSystem : MonoBehaviour
             }
         }
     }
+    //Смерть игрока
     private void Die()
     {
         anim.Play("Death");
@@ -78,29 +76,9 @@ public class HealthSystem : MonoBehaviour
         GetComponent<PlayerCombat>().enabled = false;
         gameObject.tag = "Untagged";
         Invoke("Respawn", 2f);
-
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-    //bool IsAttackFromFront(Transform enemy)
-    //{
-    //    int playerLookDirection = _characterSprite.flipX ? -1 : 1;
-    //    float directionToEnemy = Mathf.Sign(enemy.position.x - transform.position.x);
-    //    return playerLookDirection == directionToEnemy;
-    //}
-    //void Block()
-    //{
-    //    if (Input.GetMouseButtonDown(1))
-    //    {
-    //        anim.Play("Block");
-    //        block = true;
-    //    }
-    //}
+    // Перезагрузка после смерти игрока
     void Respawn()
-    {
-        //transform.position = startPos;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-    void DieVoid()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

@@ -61,7 +61,7 @@ public class Enemy : MonoBehaviour
             Goback();
         }
     }
-
+    //Спокойное патрулирование
     void Chill()
     {
         if (transform.position.x > point.position.x + positionOfPatrol)
@@ -84,7 +84,7 @@ public class Enemy : MonoBehaviour
             transform.position = new Vector2(transform.position.x - speed * Time.deltaTime, transform.position.y);
         }
     }
-
+    //Бежит на врага
     void Angry()
     {
         transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
@@ -99,7 +99,7 @@ public class Enemy : MonoBehaviour
             _characterSprite.flipX = true;
         }
     }
-
+    //Возвращение к точек если игрок далеко
     void Goback()
     {
         transform.position = Vector2.MoveTowards(transform.position, point.position, speed * Time.deltaTime);

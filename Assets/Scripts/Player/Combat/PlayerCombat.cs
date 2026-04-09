@@ -2,26 +2,26 @@ using UnityEngine;
 
 public class PlayerCombat : Sounds
 {
+    [Header("Атака")]
     public Animator animator;
     public Transform AttackPoint;
     public float AttackRange = 0.5f;
     public int AttackDamage = 40;
     public LayerMask enemyLayers;
     public float comboTime = 0.5f;
-    public CharacterMovement _speed;
-
+    public float AttackRate = 1f;
     public float attackDuration = 0.6f;
 
     private int comboCount = 0;
     private float lastAttackTime;
-    public float AttackRate = 1f;
+    
     float nextAttackTime = 0f;
-
+    [Header("Отоброжение игрока")]
     [SerializeField] private SpriteRenderer _playerSprite;
     private CharacterMovement _movement;
 
     private Vector3 _attackOffset;
-
+    [Header("Проверка земли")]
     private bool _isGrounded;
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Vector3 _groundCheckOffset;
@@ -51,7 +51,7 @@ public class PlayerCombat : Sounds
             if (Time.time >= nextAttackTime)
             {
                 UpdateAttackPointPosition();
-
+                // При нажатии левой кнопки мыши происходит атака и отключается движение
                 if (Input.GetMouseButtonDown(0))
                 {
                     _movement = GetComponent<CharacterMovement>();
@@ -66,19 +66,19 @@ public class PlayerCombat : Sounds
         }
         if (attackDuration >= 0.5f)
         {
-            StopAttacking1();
+            StopAttacking();
         }
     }
-
+    // обновление точки атаки игрока при повороте 
     void UpdateAttackPointPosition()
     {
         float direction = _playerSprite.flipX ? -1f : 1f;
         AttackPoint.position = transform.position + new Vector3(_attackOffset.x * direction, _attackOffset.y, 0);
     }
 
+    // Атака Игрока
     public void Attack()
     {
-        //_movement._rigidbody.AddForce(transform.up * 2f, ForceMode2D.Impulse);
         comboCount = (comboCount + 1) % 3;
         lastAttackTime = Time.time;
         animator.SetTrigger("Attack" + (comboCount + 1));
@@ -90,17 +90,17 @@ public class PlayerCombat : Sounds
             enemyScript.TakeDamage(AttackDamage);
         }
         PlaySound(sounds[0], volume: 0.05f);
-        if (_movement != null && _movement.IsLunging())
+        if (_movement.IsLunging())
         {
             return;
         }
-        //Invoke(nameof(StopAttacking), attackDuration);
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(AttackPoint.position, AttackRange);
     }
+    // Проверка находится ли игрок на земле
     private void CheckGround()
     {
         float rayLength = 0.1f;
@@ -112,12 +112,8 @@ public class PlayerCombat : Sounds
         Color rayColor = _isGrounded ? Color.green : Color.red;
         Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);
     }
-    void StopAttacking1()
-    {
-        GetComponent<CharacterMovement>().enabled = true;
-        _movement.IsAttacking = false;
-    }
-    void StopAttacking2()
+    //Возвращение движения
+    void StopAttacking()
     {
         GetComponent<CharacterMovement>().enabled = true;
         _movement.IsAttacking = false;

@@ -19,9 +19,6 @@ public class CharacterMovement : Sounds
     public float LungeDuration = 0.3f;
     public float LungeCooldown = 1f;
     public float LungeInvincibilityTime = 0.5f;
-    [Tooltip("Насколько уменьшить коллайдер (0.5 = в 2 раза)")]
-    public float lungeColliderScale = 0.6f;
-    [Tooltip("Слой врагов, сквозь которые можно проходить")]
     public LayerMask enemyLayer;
 
     [Header("Компоненты")]
@@ -50,13 +47,8 @@ public class CharacterMovement : Sounds
         _animations = GetComponentInChildren<CharacterAnimations>();
         _characterSprite = GetComponent<SpriteRenderer>();
         _playerCollider = GetComponent<Collider2D>();
-        if (_playerCollider != null)
-            _originalColliderSize = _playerCollider.bounds.size;
-
         _playerLayer = gameObject.layer;
-
-        if (playerHealth == null)
-            playerHealth = GetComponent<HealthSystem>();
+        playerHealth = GetComponent<HealthSystem>();
     }
 
     private void FixedUpdate()
@@ -95,12 +87,11 @@ public class CharacterMovement : Sounds
             if (invincibilityTimer <= 0f)
             {
                 isInvincible = false;
-                if (_characterSprite != null)
-                    _characterSprite.color = new Color(1f, 1f, 1f, 1f);
+                _characterSprite.color = new Color(1f, 1f, 1f, 1f);
             }
         }
     }
-
+    // Проверка в воздухе ли игрок для анимации
     private void UpdateFlyingState()
     {
         if (_isGrounded)
@@ -112,7 +103,7 @@ public class CharacterMovement : Sounds
             _animations.IsFlying = true;
         }
     }
-
+    //Передвижение игрока
     public void Move()
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
@@ -144,7 +135,7 @@ public class CharacterMovement : Sounds
             _walkSoundTimer = 0.4f;
         }
     }
-
+    // Проверка стоит ли игрок на земле
     public void CheckGround()
     {
         float rayLength = 0.1f;
@@ -156,7 +147,7 @@ public class CharacterMovement : Sounds
         Color rayColor = _isGrounded ? Color.green : Color.red;
         Debug.DrawRay(rayStartPosition, Vector3.down * rayLength, rayColor);    
     }
-
+    //Прыжок игрока
     private void Jump()
     {
         if (_isGrounded)
@@ -165,6 +156,7 @@ public class CharacterMovement : Sounds
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
         }
     }
+    //Рывок
     IEnumerator LungeCoroutine()
     {
         lockLunge = true;
@@ -201,17 +193,15 @@ public class CharacterMovement : Sounds
     {
         return isInvincible;
     }
+    // Проверка приземление для звука
     void CheckLanding()
     {
         if (_isGrounded && !_wasGrounded)
         {
-            //if ()
-            //{
             PlaySound(sounds[2], 0.1f);
-            //}
         }
     }
-        public bool IsGrounded()
+    public bool IsGrounded()
     {
         return _isGrounded;
     }

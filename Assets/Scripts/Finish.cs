@@ -5,7 +5,7 @@ public class levelUnlocker : MonoBehaviour
 {
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Конец уровня срабатывает только для игрока
+        //Конец уровня срабатывает только для игрока
         if (collision.CompareTag("Player"))
         {
             UnlockNextLevel();
@@ -14,7 +14,7 @@ public class levelUnlocker : MonoBehaviour
 
     private void UnlockNextLevel()
     {
-        // Текущая сцена
+        //Текущая сцена
         int currentScene = SceneManager.GetActiveScene().buildIndex;
         //перезагружаем текущую сцену
         SceneManager.LoadScene(currentScene);

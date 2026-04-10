@@ -5,15 +5,15 @@ public class MainMenu : MonoBehaviour
 {
     public void StartButton()
     {
-        // Старт: переходим на следующую сцену после меню.
+        //Загрузка первого уровня
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-        // Гарантируем обычное время игры при запуске уровня.
+        //Востановление времени
         Time.timeScale = 1f;
     }
     public void ExitGame()
     {
         Debug.Log("Закрыто");
-        // Закрытие приложения (в Editor визуально не срабатывает).
+        // Закрыть игру
         Application.Quit();
     }
 }

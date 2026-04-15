@@ -5,6 +5,8 @@ public class Pause : MonoBehaviour
 {
     // Панель паузы (UI), которую показываем/скрываем.
     public GameObject panel;
+    // Панель настроек (Options).
+    public GameObject OptionPanel;
     // Имя сцены главного меню из Build Settings.
     [SerializeField] private string menuSceneName = "Menu";
 
@@ -13,6 +15,12 @@ public class Pause : MonoBehaviour
         // По Esc переключаем состояние паузы.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            if (OptionPanel != null && OptionPanel.activeSelf)
+            {
+                CloseOptions();
+                return;
+            }
+
             TogglePause();
         }
     }
@@ -31,12 +39,20 @@ public class Pause : MonoBehaviour
     {
         // Останавливаем игру и показываем меню паузы.
         panel.SetActive(true);
+        if (OptionPanel != null)
+        {
+            OptionPanel.SetActive(false);
+        }
         Time.timeScale = 0f;
     }
     public void ResumeGame()
     {
         // Возобновляем игру и скрываем меню паузы.
         panel.SetActive(false);
+        if (OptionPanel != null)
+        {
+            OptionPanel.SetActive(false);
+        }
         Time.timeScale = 1f;
     }
     public void TogglePause()
@@ -71,6 +87,27 @@ public class Pause : MonoBehaviour
     {
         OpenMenu();
     }
+
+    public void OpenOptions()
+    {
+        // Переход с панели паузы на панель настроек.
+        panel.SetActive(false);
+        if (OptionPanel != null)
+        {
+            OptionPanel.SetActive(true);
+        }
+    }
+
+    public void CloseOptions()
+    {
+        // Возвращение с панели настроек на панель паузы.
+        if (OptionPanel != null)
+        {
+            OptionPanel.SetActive(false);
+        }
+        panel.SetActive(true);
+    }
+
     public void ExitGame()
     {
         // На всякий случай сбрасываем timeScale перед выходом.

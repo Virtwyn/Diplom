@@ -33,6 +33,8 @@ public class CharacterMovement : Sounds
     [SerializeField] private HealthSystem playerHealth;
     private bool lockLunge = false;
     private bool isLunging = false;
+    private bool _externalMovementLock = false;
+    private bool _externalLungeLock = false;
     private bool isInvincible = false;
     private float invincibilityTimer = 0f;
     private Collider2D _playerCollider;
@@ -62,12 +64,12 @@ public class CharacterMovement : Sounds
     private void Update()
     {
         CheckLanding();
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !isLunging && _isGrounded)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !_externalLungeLock && !isLunging && _isGrounded)
         {
             StartCoroutine(LungeCoroutine());
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded && !IsAttacking && !isLunging)
         {
             Jump();
             _animations.Jump();
@@ -108,6 +110,15 @@ public class CharacterMovement : Sounds
     {
         _input = new Vector2(Input.GetAxis("Horizontal"), 0);
         _isMoving = _input.x != 0;
+
+        if (_externalMovementLock && !isLunging)
+        {
+            _isMoving = false;
+            _rigidbody.linearVelocity = new Vector2(0, _rigidbody.linearVelocity.y);
+            _walkSoundTimer = walkSoundInterval;
+            return;
+        }
+
         if (_input.x != 0 && !isLunging)
         {
             _characterSprite.flipX = _input.x > 0 ? false : true;
@@ -150,7 +161,7 @@ public class CharacterMovement : Sounds
     //Прыжок игрока
     private void Jump()
     {
-        if (_isGrounded)
+        if (_isGrounded && !IsAttacking && !isLunging)
         {
             PlaySound(sounds[1]);
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
@@ -162,32 +173,42 @@ public class CharacterMovement : Sounds
         lockLunge = true;
         isLunging = true;
         float direction = _input.x != 0 ? Mathf.Sign(_input.x) : (_characterSprite.flipX ? -1f : 1f);
-        _rigidbody.simulated = false;
-        if (_playerCollider != null)
-            _playerCollider.enabled = false;
-         _characterSprite.flipX = direction < 0;
-       anim.Play("Roll");
+        _characterSprite.flipX = direction < 0;
+        anim.Play("Roll");
+        SetEnemyCollisionIgnored(true);
 
         isInvincible = true;
         invincibilityTimer = LungeInvincibilityTime;
 
         float elapsedTime = 0f;
-        Vector2 targetVelocity = new Vector2(direction * LungeImpuls, 0);
 
         while (elapsedTime < LungeDuration)
         {
-            float t = elapsedTime / LungeDuration;
-            transform.position += (Vector3)(targetVelocity * t * Time.deltaTime);
+            // Сохраняем вертикальную физику (гравитация/падение), меняем только горизонталь рывка.
+            _rigidbody.linearVelocity = new Vector2(direction * LungeImpuls, _rigidbody.linearVelocity.y);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        _rigidbody.simulated = true;
-        if (_playerCollider != null)
-            _playerCollider.enabled = true;
+
+        _rigidbody.linearVelocity = new Vector2(0f, _rigidbody.linearVelocity.y);
+        SetEnemyCollisionIgnored(false);
 
         isLunging = false;
         yield return new WaitForSeconds(LungeCooldown);
         lockLunge = false;
+    }
+    private void SetEnemyCollisionIgnored(bool ignoreCollision)
+    {
+        int enemyMaskValue = enemyLayer.value;
+
+        for (int layer = 0; layer < 32; layer++)
+        {
+            bool layerInMask = (enemyMaskValue & (1 << layer)) != 0;
+            if (layerInMask)
+            {
+                Physics2D.IgnoreLayerCollision(_playerLayer, layer, ignoreCollision);
+            }
+        }
     }
     public bool IsInvincible()
     {
@@ -208,5 +229,15 @@ public class CharacterMovement : Sounds
     public bool IsLunging()
     {
         return isLunging;
+    }
+
+    public void SetExternalMovementLock(bool isLocked)
+    {
+        _externalMovementLock = isLocked;
+    }
+
+    public void SetExternalLungeLock(bool isLocked)
+    {
+        _externalLungeLock = isLocked;
     }
 }

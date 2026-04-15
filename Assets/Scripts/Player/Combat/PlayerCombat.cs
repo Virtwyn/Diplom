@@ -10,9 +10,13 @@ public class PlayerCombat : Sounds
     public LayerMask enemyLayers;
     public float comboTime = 0.5f;
     public float AttackRate = 1f;
-    public float attackDuration = 0.6f;
+    public float movementLockDuration = 0.5f;
+    public float lungeLockDuration = 0.35f;
 
     private int comboCount = 0;
+    private bool _isAttackingNow = false;
+    private bool _isLungeLockedByAttack = false;
+    private float _attackTimer = 0f;
     private float lastAttackTime;
     
     float nextAttackTime = 0f;
@@ -26,8 +30,6 @@ public class PlayerCombat : Sounds
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Vector3 _groundCheckOffset;
 
-    CharacterMovement Move;
-
     private void Start()
     {
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
@@ -40,7 +42,22 @@ public class PlayerCombat : Sounds
     }
     void Update()
     {
-        attackDuration += Time.deltaTime;
+        if (_isAttackingNow)
+        {
+            _attackTimer += Time.deltaTime;
+
+            if (_isLungeLockedByAttack && _attackTimer >= lungeLockDuration)
+            {
+                _movement.SetExternalLungeLock(false);
+                _isLungeLockedByAttack = false;
+            }
+
+            if (_attackTimer >= movementLockDuration)
+            {
+                StopAttacking();
+            }
+        }
+
         if (_isGrounded)
         {
 
@@ -54,19 +71,22 @@ public class PlayerCombat : Sounds
                 // При нажатии левой кнопки мыши происходит атака и отключается движение
                 if (Input.GetMouseButtonDown(0))
                 {
-                    _movement = GetComponent<CharacterMovement>();
+                    if (_movement.IsLunging())
+                    {
+                        return;
+                    }
+
                     _movement._rigidbody.linearVelocity = new Vector2(0, _movement._rigidbody.linearVelocity.y);
                     _movement.IsAttacking = true;
-                    attackDuration = 0;
-                    GetComponent<CharacterMovement>().enabled = false;
+                    _movement.SetExternalMovementLock(true);
+                    _movement.SetExternalLungeLock(true);
+                    _attackTimer = 0f;
+                    _isAttackingNow = true;
+                    _isLungeLockedByAttack = true;
                     Attack();
                     nextAttackTime = Time.time + 1f / AttackRate;
                 }
             }
-        }
-        if (attackDuration >= 0.5f)
-        {
-            StopAttacking();
         }
     }
     // обновление точки атаки игрока при повороте 
@@ -115,7 +135,11 @@ public class PlayerCombat : Sounds
     //Возвращение движения
     void StopAttacking()
     {
-        GetComponent<CharacterMovement>().enabled = true;
+        _movement.SetExternalMovementLock(false);
+        _movement.SetExternalLungeLock(false);
+        _isAttackingNow = false;
+        _isLungeLockedByAttack = false;
+        _attackTimer = 0f;
         _movement.IsAttacking = false;
     }
 }

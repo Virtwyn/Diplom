@@ -21,6 +21,8 @@ public class HealthSystem : MonoBehaviour
     [SerializeField] private float invincibilityTime = 1;
     private bool isInvincible;
     private float invincibilityTimer;
+    private PlayerShield _playerShield;
+
 
     void Start()
     {
@@ -28,6 +30,7 @@ public class HealthSystem : MonoBehaviour
         currentHealth = maxHealth;
         healthSlider.maxValue = maxHealth;
         healthSlider.value = currentHealth;
+        _playerShield = GetComponent<PlayerShield>();
     }
     void Update()
     {
@@ -54,18 +57,29 @@ public class HealthSystem : MonoBehaviour
     public void TakeDamage(int damage, Transform attacker)
     {
         if (isInvincible) return;
-        {
-            currentHealth -= damage;
 
-            if (currentHealth <= 0)
-            {
-                Die();
-            }
-            else
-            {
-                isInvincible = true;
-                invincibilityTimer = invincibilityTime;
-            }
+        int finalDamage = damage;
+        if (_playerShield != null)
+        {
+            finalDamage = _playerShield.GetModifiedDamage(damage, attacker);
+        }
+
+        if (finalDamage <= 0)
+        {
+            return;
+        }
+
+        currentHealth -= finalDamage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            anim.Play("Hurt");
+            isInvincible = true;
+            invincibilityTimer = invincibilityTime;
         }
     }
     //Смерть игрока

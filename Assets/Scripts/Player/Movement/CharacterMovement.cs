@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 
-public class CharacterMovement : Sounds
+public class CharacterMovement : MonoBehaviour
 {
     [Header("Звуки")]
     public float walkSoundInterval = 0.4f;
@@ -35,11 +35,16 @@ public class CharacterMovement : Sounds
     private bool isLunging = false;
     private bool _externalMovementLock = false;
     private bool _externalLungeLock = false;
+    private bool _externalJumpLock = false;
     private bool isInvincible = false;
     private float invincibilityTimer = 0f;
     private Collider2D _playerCollider;
     private Vector3 _originalColliderSize;
     private int _playerLayer;
+
+    [SerializeField] private AudioClip MoveSoundClip;
+    [SerializeField] private AudioClip JumpSoundClip;
+    [SerializeField] private AudioClip LandingSoundClip;
 
     public bool IsAttacking { get; set; } = false;
 
@@ -69,7 +74,7 @@ public class CharacterMovement : Sounds
             StartCoroutine(LungeCoroutine());
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded && !IsAttacking && !isLunging)
+        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded && !IsAttacking && !isLunging && !_externalJumpLock)
         {
             Jump();
             _animations.Jump();
@@ -137,7 +142,8 @@ public class CharacterMovement : Sounds
 
             if (_walkSoundTimer >= walkSoundInterval && !isLunging)
             {
-                PlaySound(sounds[0]);
+                SoundFXManager.instance.PlaySoundFXClip(MoveSoundClip, transform, 1f);
+                //PlaySound(sounds[0]);
                 _walkSoundTimer = 0f;
             }
         }
@@ -161,9 +167,10 @@ public class CharacterMovement : Sounds
     //Прыжок игрока
     private void Jump()
     {
-        if (_isGrounded && !IsAttacking && !isLunging)
+        if (_isGrounded && !IsAttacking && !isLunging && !_externalJumpLock)
         {
-            PlaySound(sounds[1]);
+            SoundFXManager.instance.PlaySoundFXClip(JumpSoundClip, transform, 1f);
+            //PlaySound(sounds[1]);
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
         }
     }
@@ -219,7 +226,8 @@ public class CharacterMovement : Sounds
     {
         if (_isGrounded && !_wasGrounded)
         {
-            PlaySound(sounds[2], 0.1f);
+            SoundFXManager.instance.PlaySoundFXClip(LandingSoundClip, transform, 0.5f);
+            //PlaySound(sounds[2], 0.1f);
         }
     }
     public bool IsGrounded()
@@ -239,5 +247,10 @@ public class CharacterMovement : Sounds
     public void SetExternalLungeLock(bool isLocked)
     {
         _externalLungeLock = isLocked;
+    }
+
+    public void SetExternalJumpLock(bool isLocked)
+    {
+        _externalJumpLock = isLocked;
     }
 }

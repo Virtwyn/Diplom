@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerCombat : Sounds
+public class PlayerCombat : MonoBehaviour
 {
     [Header("Атака")]
     public Animator animator;
@@ -23,6 +23,7 @@ public class PlayerCombat : Sounds
     [Header("Отоброжение игрока")]
     [SerializeField] private SpriteRenderer _playerSprite;
     private CharacterMovement _movement;
+    private PlayerShield _playerShield;
 
     private Vector3 _attackOffset;
     [Header("Проверка земли")]
@@ -30,11 +31,14 @@ public class PlayerCombat : Sounds
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Vector3 _groundCheckOffset;
 
+    [SerializeField] private AudioClip[] AttackSoundClip;
+
     private void Start()
     {
         _playerSprite = GetComponentInChildren<SpriteRenderer>();
         _attackOffset = AttackPoint.localPosition;
         _movement = GetComponent<CharacterMovement>();
+        _playerShield = GetComponent<PlayerShield>();
     }
     private void FixedUpdate()
     {
@@ -71,6 +75,11 @@ public class PlayerCombat : Sounds
                 // При нажатии левой кнопки мыши происходит атака и отключается движение
                 if (Input.GetMouseButtonDown(0))
                 {
+                    if (_playerShield != null && _playerShield.IsBlocking)
+                    {
+                        return;
+                    }
+
                     if (_movement.IsLunging())
                     {
                         return;
@@ -109,7 +118,8 @@ public class PlayerCombat : Sounds
             EnemyCombat enemyScript = enemy.GetComponent<EnemyCombat>();
             enemyScript.TakeDamage(AttackDamage);
         }
-        PlaySound(sounds[0], volume: 0.05f);
+        SoundFXManager.instance.PlayRundomSoundFXClip(AttackSoundClip, transform, 0.05f);
+        //PlaySound(sounds[0], volume: 0.05f);
         if (_movement.IsLunging())
         {
             return;

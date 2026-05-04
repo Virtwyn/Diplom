@@ -7,6 +7,7 @@ public class PlayerShield : MonoBehaviour
     private const string IdleBlockBoolParameter = "IdleBlock";
     private const string BlockStartStateName = "Block";
     [SerializeField, Range(0f, 1f)] private float blockedDamageMultiplier = 0f;
+    [SerializeField] private float blockLockDuration = 0.25f;
 
     [Header("References")]
     [SerializeField] private Animator animator;
@@ -16,6 +17,7 @@ public class PlayerShield : MonoBehaviour
     private int _blockTriggerHash;
     private int _idleBlockBoolHash;
     private bool _blockStartPlayed;
+    private float _blockLockTimer;
 
     public bool IsBlocking { get; private set; }
 
@@ -42,6 +44,8 @@ public class PlayerShield : MonoBehaviour
 
     private void Update()
     {
+        UpdateBlockLockTimer();
+
         bool canBlockNow = movement != null && movement.IsGrounded() && !movement.IsLunging();
 
         if (!canBlockNow)
@@ -60,6 +64,8 @@ public class PlayerShield : MonoBehaviour
                 animator.SetTrigger(_blockTriggerHash);
                 _blockStartPlayed = true;
             }
+
+            _blockLockTimer = blockLockDuration;
         }
         else if (Input.GetMouseButtonUp(BlockMouseButton))
         {
@@ -71,7 +77,8 @@ public class PlayerShield : MonoBehaviour
             return;
         }
 
-        SetMovementLocks(IsBlocking);
+        bool shouldLockMovement = IsBlocking || _blockLockTimer > 0f;
+        SetMovementLocks(shouldLockMovement);
 
         if (IsBlocking)
         {
@@ -97,6 +104,7 @@ public class PlayerShield : MonoBehaviour
     {
         IsBlocking = false;
         _blockStartPlayed = false;
+        _blockLockTimer = 0f;
         SetMovementLocks(false);
 
         if (animator != null)
@@ -104,6 +112,16 @@ public class PlayerShield : MonoBehaviour
             animator.SetBool(_idleBlockBoolHash, false);
             animator.ResetTrigger(_blockTriggerHash);
         }
+    }
+
+    private void UpdateBlockLockTimer()
+    {
+        if (_blockLockTimer <= 0f)
+        {
+            return;
+        }
+
+        _blockLockTimer -= Time.deltaTime;
     }
 
     public int GetModifiedDamage(int incomingDamage, Transform attacker)

@@ -46,6 +46,11 @@ public class PlayerCombat : MonoBehaviour
     }
     void Update()
     {
+        if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         if (_isAttackingNow)
         {
             _attackTimer += Time.deltaTime;
@@ -108,6 +113,11 @@ public class PlayerCombat : MonoBehaviour
     // Атака Игрока
     public void Attack()
     {
+        if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         comboCount = (comboCount + 1) % 3;
         lastAttackTime = Time.time;
         animator.SetTrigger("Attack" + (comboCount + 1));

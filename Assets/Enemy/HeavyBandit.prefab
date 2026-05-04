@@ -4975,10 +4975,10 @@ GameObject:
   - component: {fileID: 1864466429772023129}
   - component: {fileID: 4441813651734877593}
   - component: {fileID: 6973984902067100188}
-  - component: {fileID: 752214209603007900}
   - component: {fileID: 3647114272478080558}
   - component: {fileID: 261120149839279390}
   - component: {fileID: 6170984964956998629}
+  - component: {fileID: 1707116939928714664}
   m_Layer: 8
   m_Name: HeavyBandit
   m_TagString: Enemy
@@ -5070,7 +5070,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 48
   m_Sprite: {fileID: 21300000, guid: 317b8365a4649ab459f6cb58ec8f9f18, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5094,7 +5094,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 10000
   m_LinearDamping: 0.5
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -5109,52 +5109,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &752214209603007900
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5601284096253959063}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: -0.02, y: 0.662}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1.5, y: 1.5}
-    newSize: {x: 1.28, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.8, y: 1.2}
-  m_EdgeRadius: 0
 --- !u!61 &3647114272478080558
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5215,18 +5169,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
   hp: 90
   damage: 15
-  speed: {fileID: 6170984964956998629}
   anim: {fileID: 1864466429772023129}
   _enemySprite: {fileID: 4441813651734877593}
-  invincibilityTime: 0.05
+  recharge: 0
+  startRecharge: 2.5
+  radius: 0.5
+  attackLockDuration: 1
+  speed: {fileID: 6170984964956998629}
+  enemyCollider: {fileID: 1707116939928714664}
   attackPos: {fileID: 692766480682129220}
   playerMask:
     serializedVersion: 2
     m_Bits: 512
-  radius: 0.5
-  enemyCollider: {fileID: 752214209603007900}
-  recharge: 0
-  startRecharge: 4
 --- !u!114 &6170984964956998629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5240,8 +5194,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 2.5
-  positionOfPatrol: 2
-  stoppingDistance: 6
+  positionOfPatrol: 4
+  stoppingDistance: 4
+  minDistanceToPlayer: 0.8
   maxVerticalDistance: 0.6
   point: {fileID: 0}
   _characterSprite: {fileID: 4441813651734877593}
+--- !u!70 &1707116939928714664
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5601284096253959063}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.65}
+  m_Size: {x: 0.72, y: 1.17}
+  m_Direction: 0

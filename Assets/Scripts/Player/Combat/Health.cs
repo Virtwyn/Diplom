@@ -22,7 +22,12 @@ public class HealthSystem : MonoBehaviour
     private bool isInvincible;
     private float invincibilityTimer;
     private PlayerShield _playerShield;
+    private bool _suppressBlinking = false;
 
+
+    [Header("Респавн")]
+    public bool resetHealthOnRespawn = true;
+    [SerializeField] private Vector3 _defaultRespawnPos;
 
     void Start()
     {
@@ -38,12 +43,16 @@ public class HealthSystem : MonoBehaviour
         if (isInvincible)
         {
             invincibilityTimer -= Time.deltaTime;
-            float alpha = Mathf.PingPong(Time.time * 5f, 1f);
-            _spriteRenderer.color = new Color(1f, 1f, 1f, alpha);
+            if (!_suppressBlinking)
+            {
+                float alpha = Mathf.PingPong(Time.time * 5f, 1f);
+                _spriteRenderer.color = new Color(1f, 1f, 1f, alpha);
+            }
 
             if (invincibilityTimer <= 0f)
             {
                 isInvincible = false;
+                _suppressBlinking = false;
                 _spriteRenderer.color = new Color(1f, 1f, 1f, 1f);
             }
         }
@@ -86,7 +95,13 @@ public class HealthSystem : MonoBehaviour
     private void Die()
     {
         anim.Play("Death");
-        GetComponent<CharacterMovement>().enabled=false;
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        rb.bodyType = RigidbodyType2D.Static;
+
+        GetComponent<CharacterMovement>().enabled = false;
         GetComponent<PlayerCombat>().enabled = false;
         gameObject.tag = "Untagged";
         Invoke("Respawn", 2f);
@@ -94,6 +109,38 @@ public class HealthSystem : MonoBehaviour
     // Перезагрузка после смерти игрока
     void Respawn()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        Vector3 respawnPos = CheckpointManager.Instance != null
+            ? CheckpointManager.Instance.GetRespawnPosition()
+            : _defaultRespawnPos;
+        if (resetHealthOnRespawn)
+        {
+            currentHealth = maxHealth;
+            healthSlider.value = currentHealth;
+            healthSlider.maxValue = maxHealth;
+            healthBarValueText.text = currentHealth.ToString() + "/" + maxHealth.ToString();
+        }
+        CharacterMovement movement = GetComponent<CharacterMovement>();
+        PlayerCombat combat = GetComponent<PlayerCombat>();
+        if (movement != null) movement.enabled = true;
+        if (combat != null) combat.enabled = true;
+        gameObject.tag = "Player";
+        transform.position = respawnPos;
+        rbPlayer.linearVelocity = Vector2.zero; 
+        rbPlayer.angularVelocity = 0f;
+        if (anim != null)
+        {
+            anim.Play("Idle");
+        }
+        isInvincible = true;
+        invincibilityTimer = invincibilityTime;
+    }
+    public void SetInvincible(float duration, bool suppressBlinking = false)
+    {
+        isInvincible = true;
+        invincibilityTimer = duration;
+        _suppressBlinking = suppressBlinking;
     }
 }
+

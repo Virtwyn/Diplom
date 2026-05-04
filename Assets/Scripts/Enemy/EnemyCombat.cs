@@ -13,6 +13,7 @@ public class EnemyCombat : MonoBehaviour
     public float recharge;
     public float startRecharge;
     public float radius;
+    [SerializeField] private float attackLockDuration = 0.6f;
     [Header("Передвижние врага")]
     public Enemy speed;
 
@@ -24,14 +25,18 @@ public class EnemyCombat : MonoBehaviour
     public Collider2D enemyCollider;
     public Transform attackPos;
     public LayerMask playerMask;
+    private bool playerInRange;
+    private bool isAttacking;
+    private float defaultSpeed;
     
     void Start()
     {
-        Collider2D enemyCollider = GetComponent<Collider2D>();
+        enemyCollider = GetComponent<Collider2D>();
         anim = GetComponent<Animator>();
         _enemySprite = GetComponentInChildren<SpriteRenderer>();
         _attackOffset = attackPos.localPosition;
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        defaultSpeed = speed.speed;
     }
 
     void Update()
@@ -46,33 +51,38 @@ public class EnemyCombat : MonoBehaviour
                 isInvincible = false;
             }
         }
-        recharge += Time.deltaTime;
-        if (speed.speed > 0)
-            anim.SetBool("Run", true);
+        if (playerInRange)
+        {
+            speed.speed = 0;
+            anim.SetBool("Run", false);
+
+            if (!isAttacking)
+            {
+                recharge += Time.deltaTime;
+                if (recharge >= startRecharge)
+                {
+                    StartAttack();
+                }
+            }
+        }
+        else if (!isAttacking)
+        {
+            speed.speed = defaultSpeed;
+            anim.SetBool("Run", speed.speed > 0);
+        }
     }
     public void OnTriggerStay2D(Collider2D other)
     {
-            
         if (other.CompareTag("Player"))
         {
-            anim.SetBool("Run", false);
-            speed.speed = 0;
-            if (recharge >= startRecharge)
-            {
-                anim.SetBool("Attack", true);
-                recharge = 0;
-            }
-            
-        }
-        else
-        {
-
+            playerInRange = true;
         }
     }
     public void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
+            playerInRange = true;
             recharge = 0;
         }
     }
@@ -80,9 +90,13 @@ public class EnemyCombat : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            anim.SetBool("Attack", false);
-            anim.SetBool("Run", true);
-            speed.speed = 4;
+            playerInRange = false;
+            if (!isAttacking)
+            {
+                anim.SetBool("Attack", false);
+                anim.SetBool("Run", true);
+                speed.speed = defaultSpeed;
+            }
         }
     }
     private void OnDrawGizmosSelected()
@@ -93,12 +107,31 @@ public class EnemyCombat : MonoBehaviour
     public void OnAttack()
     {
         Collider2D[] playerCollider = Physics2D.OverlapCircleAll(attackPos.position, radius, playerMask);
-        anim.SetBool("Attack", false);
         for (int i = 0; i < playerCollider.Length; i++)
         {
             playerCollider[i].GetComponent<HealthSystem>().TakeDamage(damage, this.transform);
         }
 
+    }
+    private void StartAttack()
+    {
+        isAttacking = true;
+        recharge = 0;
+        anim.SetBool("Attack", true);
+        CancelInvoke(nameof(FinishAttack));
+        Invoke(nameof(FinishAttack), attackLockDuration);
+    }
+
+    private void FinishAttack()
+    {
+        isAttacking = false;
+        anim.SetBool("Attack", false);
+
+        if (!playerInRange)
+        {
+            speed.speed = defaultSpeed;
+            anim.SetBool("Run", true);
+        }
     }
     void UpdateAttackPointPosition()
     {
@@ -109,26 +142,41 @@ public class EnemyCombat : MonoBehaviour
     public void TakeDamage(int damage)
     {
         if (isInvincible) return;
-        {
-            hp -= damage;
 
-            if (hp <= 0)
-            {
-                GetComponent<EnemyCombat>().enabled = false;
-                GetComponent<Enemy>().enabled = false;
-                anim.Play("Death");
-                gameObject.tag = "Untagged";
-                Rigidbody2D rb = GetComponent<Rigidbody2D>();
-                rb.linearVelocity = Vector2.zero;
-                rb.angularVelocity = 0f;
-                rb.bodyType = RigidbodyType2D.Static;
-                enemyCollider.enabled = false;
-            }
-            else
-            {
-                isInvincible = true;
-                invincibilityTimer = invincibilityTime;
-            }
+        hp -= damage;
+
+        if (hp <= 0)
+        {
+            Die();
         }
+        else
+        {
+            isInvincible = true;
+            invincibilityTimer = invincibilityTime;
+        }
+    }
+    private void Die()
+    {
+        CancelInvoke(nameof(FinishAttack));
+
+        GetComponent<EnemyCombat>().enabled = false;
+        GetComponent<Enemy>().enabled = false;
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        rb.bodyType = RigidbodyType2D.Static;
+
+        // Переводим на слой "Dead" который не коллидирует с игроком
+        gameObject.layer = LayerMask.NameToLayer("Dead");
+
+        // Меняем все дочерние объекты тоже
+        foreach (Transform child in GetComponentsInChildren<Transform>())
+        {
+            child.gameObject.layer = LayerMask.NameToLayer("Dead");
+        }
+
+        anim.Play("Death");
+        gameObject.tag = "Untagged";
     }
 }

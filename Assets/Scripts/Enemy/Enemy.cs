@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     public float speed=4;
     public int positionOfPatrol;
     public float stoppingDistance;
+    [SerializeField] private float minDistanceToPlayer = 0.6f;
 
     [Header("Обнаружение игрока")]
     public float maxVerticalDistance;
@@ -87,7 +88,11 @@ public class Enemy : MonoBehaviour
     //Бежит на врага
     void Angry()
     {
-        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        if (distanceToPlayer > minDistanceToPlayer)
+        {
+            transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        }
 
         // Поворот к игроку
         if (player.position.x < transform.position.x)

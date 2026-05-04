@@ -4975,10 +4975,10 @@ GameObject:
   - component: {fileID: 6375906497104589983}
   - component: {fileID: 4838099047099567778}
   - component: {fileID: 3806235969222877115}
-  - component: {fileID: 8941856010908383252}
   - component: {fileID: 6713804768023003140}
   - component: {fileID: 4851951360198355560}
   - component: {fileID: 1172797272136366859}
+  - component: {fileID: 7681487668405417543}
   m_Layer: 8
   m_Name: LightBandit
   m_TagString: Enemy
@@ -5070,7 +5070,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 38
   m_Sprite: {fileID: 21300000, guid: f2ed27d6c1c3ccc48959bcca269d88f0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5094,7 +5094,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 10000
   m_LinearDamping: 0.5
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -5109,52 +5109,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &8941856010908383252
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8762083092775013995}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: -0.02, y: 0.662}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1.5, y: 1.5}
-    newSize: {x: 1.28, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.8, y: 1.2}
-  m_EdgeRadius: 0
 --- !u!114 &6713804768023003140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5169,7 +5123,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 4
   positionOfPatrol: 6
-  stoppingDistance: 8
+  stoppingDistance: 4
+  minDistanceToPlayer: 0.8
   maxVerticalDistance: 0.7
   point: {fileID: 0}
   _characterSprite: {fileID: 4838099047099567778}
@@ -5233,15 +5188,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
   hp: 50
   damage: 6
-  speed: {fileID: 6713804768023003140}
   anim: {fileID: 6375906497104589983}
   _enemySprite: {fileID: 4838099047099567778}
-  invincibilityTime: 0.05
+  recharge: 0
+  startRecharge: 1.5
+  radius: 0.5
+  attackLockDuration: 0.8
+  speed: {fileID: 6713804768023003140}
+  enemyCollider: {fileID: 7681487668405417543}
   attackPos: {fileID: 2153258279904177195}
   playerMask:
     serializedVersion: 2
     m_Bits: 512
-  radius: 0.5
-  enemyCollider: {fileID: 8941856010908383252}
-  recharge: 0
-  startRecharge: 2.5
+--- !u!70 &7681487668405417543
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8762083092775013995}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.69}
+  m_Size: {x: 0.75, y: 1.22}
+  m_Direction: 0

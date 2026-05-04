@@ -7,10 +7,12 @@ public class CharacterMovement : MonoBehaviour
     [Header("Звуки")]
     public float walkSoundInterval = 0.4f;
     private float _walkSoundTimer = 0f;
-    private bool _wasGrounded = false;
     [Header("Передвижение")]
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
+    [SerializeField] private float _fallGravityMultiplier = 2.5f;
+    [SerializeField] private float _lowJumpGravityMultiplier = 2f;
+    [SerializeField] private float _coyoteTime = 0.12f;
     [SerializeField] private Vector3 _groundCheckOffset;
     [SerializeField] private LayerMask groundMask;
 
@@ -25,6 +27,7 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 _input;
     private bool _isMoving;
     private bool _isGrounded;
+    private float _coyoteTimeCounter;
 
     public Rigidbody2D _rigidbody;
     private CharacterAnimations _animations;
@@ -60,21 +63,22 @@ public class CharacterMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _wasGrounded = _isGrounded;
-
+        bool wasGrounded = _isGrounded;
         CheckGround();
+        UpdateCoyoteTime();
+        CheckLanding(wasGrounded);
+        ApplyVariableJumpGravity();
         Move();
     }
 
     private void Update()
     {
-        CheckLanding();
         if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !_externalLungeLock && !isLunging && _isGrounded)
         {
             StartCoroutine(LungeCoroutine());
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && _isGrounded && !IsAttacking && !isLunging && !_externalJumpLock)
+        if (Input.GetKeyDown(KeyCode.Space) && CanJumpNow())
         {
             Jump();
             _animations.Jump();
@@ -167,12 +171,53 @@ public class CharacterMovement : MonoBehaviour
     //Прыжок игрока
     private void Jump()
     {
-        if (_isGrounded && !IsAttacking && !isLunging && !_externalJumpLock)
+        if (CanJumpNow())
         {
             SoundFXManager.instance.PlaySoundFXClip(JumpSoundClip, transform, 1f);
             //PlaySound(sounds[1]);
+            _coyoteTimeCounter = 0f;
             _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
         }
+    }
+
+    private bool CanJumpNow()
+    {
+        return _coyoteTimeCounter > 0f && !IsAttacking && !isLunging && !_externalJumpLock;
+    }
+
+    private void UpdateCoyoteTime()
+    {
+        if (_isGrounded)
+        {
+            _coyoteTimeCounter = _coyoteTime;
+        }
+        else
+        {
+            _coyoteTimeCounter -= Time.fixedDeltaTime;
+        }
+    }
+
+    // "Mario-style" прыжок: короткое нажатие ниже, удержание выше.
+    private void ApplyVariableJumpGravity()
+    {
+        if (_isGrounded || isLunging)
+        {
+            return;
+        }
+
+        float verticalVelocity = _rigidbody.linearVelocity.y;
+        Vector2 extraGravity = Vector2.zero;
+
+        if (verticalVelocity < 0f)
+        {
+            extraGravity = Vector2.up * Physics2D.gravity.y * (_fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
+        }
+        else if (verticalVelocity > 0f && !Input.GetKey(KeyCode.Space))
+        {
+            extraGravity = Vector2.up * Physics2D.gravity.y * (_lowJumpGravityMultiplier - 1f) * Time.fixedDeltaTime;
+        }
+
+        _rigidbody.linearVelocity += extraGravity;
     }
     //Рывок
     IEnumerator LungeCoroutine()
@@ -186,12 +231,12 @@ public class CharacterMovement : MonoBehaviour
 
         isInvincible = true;
         invincibilityTimer = LungeInvincibilityTime;
+        playerHealth.SetInvincible(LungeInvincibilityTime, true);
 
         float elapsedTime = 0f;
 
         while (elapsedTime < LungeDuration)
         {
-            // Сохраняем вертикальную физику (гравитация/падение), меняем только горизонталь рывка.
             _rigidbody.linearVelocity = new Vector2(direction * LungeImpuls, _rigidbody.linearVelocity.y);
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -222,9 +267,9 @@ public class CharacterMovement : MonoBehaviour
         return isInvincible;
     }
     // Проверка приземление для звука
-    void CheckLanding()
+    void CheckLanding(bool wasGrounded)
     {
-        if (_isGrounded && !_wasGrounded)
+        if (_isGrounded && !wasGrounded)
         {
             SoundFXManager.instance.PlaySoundFXClip(LandingSoundClip, transform, 0.5f);
             //PlaySound(sounds[2], 0.1f);

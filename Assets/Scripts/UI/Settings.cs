@@ -10,20 +10,35 @@ public class Settings : MonoBehaviour
     void Start()
     {
         resolutinDropdown.ClearOptions();
-        List<string> options=new List<string>();
-        resolutions=Screen.resolutions;
-        int currentResolutionindex = 0;
+        List<string> options = new List<string>();
+        resolutions = Screen.resolutions;
+        int currentResolutionIndex = 0;
 
-        for(int i = 0; i < resolutions.Length; i++)
+        HashSet<string> seen = new HashSet<string>();
+
+        List<Resolution> filteredResolutions = new List<Resolution>();
+
+        for (int i = 0; i < resolutions.Length; i++)
         {
-            string option = resolutions[i].width + "x" + resolutions[i].height + " " + resolutions[i].refreshRateRatio + "Hz";
+            int refreshRate = Mathf.RoundToInt((float)resolutions[i].refreshRateRatio.value);
+            string key = resolutions[i].width + "x" + resolutions[i].height + "@" + refreshRate;
+
+            if (seen.Contains(key)) continue;
+            seen.Add(key);
+
+            filteredResolutions.Add(resolutions[i]);
+            string option = resolutions[i].width + "x" + resolutions[i].height + " " + refreshRate + "Hz";
             options.Add(option);
-            if (resolutions[i].width==Screen.currentResolution.width && resolutions[i].height==Screen.currentResolution.height)
-                currentResolutionindex = i;
+
+            if (resolutions[i].width == Screen.currentResolution.width &&
+                resolutions[i].height == Screen.currentResolution.height)
+                currentResolutionIndex = filteredResolutions.Count - 1;
         }
+
+        resolutions = filteredResolutions.ToArray();
         resolutinDropdown.AddOptions(options);
         resolutinDropdown.RefreshShownValue();
-        LoadSettings(currentResolutionindex);
+        LoadSettings(currentResolutionIndex);
     }
     public void SetFullScreen(bool isFullScreen)
     {

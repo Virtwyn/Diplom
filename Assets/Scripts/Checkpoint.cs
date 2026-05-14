@@ -44,8 +44,6 @@ public class Checkpoint : MonoBehaviour
         // Сохраняем эту точку как последнюю
         CheckpointManager.Instance.SetLastCheckpoint(this);
 
-        Debug.Log($"✅ Активирована точка: {checkpointName}");
-
         // Визуальные эффекты
         if (visualEffect != null)
             visualEffect.SetActive(true);
@@ -54,13 +52,5 @@ public class Checkpoint : MonoBehaviour
         {
             Instantiate(activateEffect, transform.position, Quaternion.identity);
         }
-
-        // Лечение если настроено
-        //if (restoreHealth && player != null)
-        //{
-        //    int healAmount = Mathf.RoundToInt(player.maxHealth * (healPercent / 100f));
-        //    player.Heal(healAmount);
-        //    Debug.Log($"💚 Восстановлено {healAmount} здоровья");
-        //}
     }
 }

@@ -56,6 +56,15 @@ TextureImporter:
   - first:
       213: 388057999756033245
     second: UI_17
+  - first:
+      213: -5481780447360278658
+    second: UI_18
+  - first:
+      213: 228940821244427079
+    second: UI_19
+  - first:
+      213: 6620621745411573659
+    second: UI_20
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -418,10 +427,10 @@ TextureImporter:
       name: UI_12
       rect:
         serializedVersion: 2
-        x: 10
-        y: 683
-        width: 35
-        height: 20
+        x: 102
+        y: 703
+        width: 85
+        height: 9
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -440,10 +449,10 @@ TextureImporter:
       name: UI_13
       rect:
         serializedVersion: 2
-        x: 56
-        y: 684
+        x: 10
+        y: 683
         width: 35
-        height: 18
+        height: 20
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -462,10 +471,10 @@ TextureImporter:
       name: UI_14
       rect:
         serializedVersion: 2
-        x: 7
-        y: 666
-        width: 31
-        height: 9
+        x: 56
+        y: 684
+        width: 35
+        height: 18
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -484,9 +493,9 @@ TextureImporter:
       name: UI_15
       rect:
         serializedVersion: 2
-        x: 38
-        y: 666
-        width: 19
+        x: 102
+        y: 686
+        width: 85
         height: 9
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -506,9 +515,9 @@ TextureImporter:
       name: UI_16
       rect:
         serializedVersion: 2
-        x: 57
+        x: 7
         y: 666
-        width: 19
+        width: 31
         height: 9
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -528,7 +537,7 @@ TextureImporter:
       name: UI_17
       rect:
         serializedVersion: 2
-        x: 76
+        x: 38
         y: 666
         width: 19
         height: 9
@@ -542,6 +551,72 @@ TextureImporter:
       bones: []
       spriteID: ddcf4bbd1b8a26500800000000000000
       internalID: 388057999756033245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_18
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 666
+        width: 19
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7f98621abdcce3b0800000000000000
+      internalID: -5481780447360278658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_19
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 666
+        width: 19
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74b3cd4c67c5d2300800000000000000
+      internalID: 228940821244427079
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_20
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 670
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b97cb7f566c21eb50800000000000000
+      internalID: 6620621745411573659
       vertices: []
       indices: 
       edges: []
@@ -570,7 +645,10 @@ TextureImporter:
       UI_15: 7301787903208175943
       UI_16: 1652299931923453484
       UI_17: 388057999756033245
+      UI_18: -5481780447360278658
+      UI_19: 228940821244427079
       UI_2: 1080825480604336155
+      UI_20: 6620621745411573659
       UI_3: -9136572144232859775
       UI_4: 8586885197115800619
       UI_5: 8160775752198118580

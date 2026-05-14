@@ -144,7 +144,7 @@ public class EnemyCombat : MonoBehaviour
         if (isInvincible) return;
 
         hp -= damage;
-
+        anim.Play("Hurt");
         if (hp <= 0)
         {
             Die();

@@ -28,6 +28,8 @@ public class CharacterMovement : MonoBehaviour
     private bool _isMoving;
     private bool _isGrounded;
     private float _coyoteTimeCounter;
+    private float _landingBuffer = 0f;
+    private const float LANDING_BUFFER_TIME = 0.1f;
 
     public Rigidbody2D _rigidbody;
     private CharacterAnimations _animations;
@@ -44,6 +46,8 @@ public class CharacterMovement : MonoBehaviour
     private Collider2D _playerCollider;
     private Vector3 _originalColliderSize;
     private int _playerLayer;
+    private PlatformEffector2D _currentPlatform;
+    private PlatformEffector2D _droppingFromPlatform;
 
     [SerializeField] private AudioClip MoveSoundClip;
     [SerializeField] private AudioClip JumpSoundClip;
@@ -73,12 +77,16 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space) && Input.GetKey(KeyCode.S) && _currentPlatform != null)
+        {
+            StartCoroutine(DropThroughPlatform());
+        }
         if (Input.GetKeyDown(KeyCode.LeftShift) && !lockLunge && !_externalLungeLock && !isLunging && _isGrounded)
         {
             StartCoroutine(LungeCoroutine());
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && CanJumpNow())
+        else if (Input.GetKeyDown(KeyCode.Space) && CanJumpNow() && !Input.GetKey(KeyCode.S))
         {
             Jump();
             _animations.Jump();
@@ -103,15 +111,26 @@ public class CharacterMovement : MonoBehaviour
         }
     }
     // Проверка в воздухе ли игрок для анимации
+    // Замени метод UpdateFlyingState полностью
     private void UpdateFlyingState()
     {
         if (_isGrounded)
         {
+            _landingBuffer = LANDING_BUFFER_TIME;
             _animations.IsFlying = false;
         }
-        else if (_rigidbody.linearVelocity.y < 0)
+        else
         {
-            _animations.IsFlying = true;
+            _landingBuffer -= Time.deltaTime;
+
+            if (_rigidbody.linearVelocity.y < 0 && _landingBuffer <= 0f)
+            {
+                _animations.IsFlying = true;
+            }
+            else if (_rigidbody.linearVelocity.y >= 0)
+            {
+                _animations.IsFlying = false;
+            }
         }
     }
     //Передвижение игрока
@@ -297,5 +316,35 @@ public class CharacterMovement : MonoBehaviour
     public void SetExternalJumpLock(bool isLocked)
     {
         _externalJumpLock = isLocked;
+    }
+    // Определяем на какой платформе стоим
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        PlatformEffector2D effector = collision.gameObject.GetComponent<PlatformEffector2D>();
+        if (effector != null)
+            _currentPlatform = effector;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        PlatformEffector2D effector = collision.gameObject.GetComponent<PlatformEffector2D>();
+        if (effector != null && _currentPlatform == effector)
+            _currentPlatform = null;
+    }
+
+    // Спрыгивание — временно разворачиваем эффектор
+    private IEnumerator DropThroughPlatform()
+    {
+        // Сохраняем ссылку локально — она не потеряется даже если _currentPlatform обнулится
+        _droppingFromPlatform = _currentPlatform;
+
+        _droppingFromPlatform.rotationalOffset = 180f;
+        yield return new WaitForSeconds(0.5f);
+
+        // Проверяем что объект ещё существует
+        if (_droppingFromPlatform != null)
+            _droppingFromPlatform.rotationalOffset = 0f;
+
+        _droppingFromPlatform = null;
     }
 }

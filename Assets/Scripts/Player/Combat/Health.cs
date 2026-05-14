@@ -95,6 +95,7 @@ public class HealthSystem : MonoBehaviour
     private void Die()
     {
         anim.Play("Death");
+        LivesSystem.Instance.LoseLife();
 
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         rb.linearVelocity = Vector2.zero;
@@ -109,6 +110,9 @@ public class HealthSystem : MonoBehaviour
     // Перезагрузка после смерти игрока
     void Respawn()
     {
+        if (LivesSystem.Instance != null && LivesSystem.Instance.GetCurrentLives() <= 0)
+            return;
+
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Dynamic;
         Vector3 respawnPos = CheckpointManager.Instance != null

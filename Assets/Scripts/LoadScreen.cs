@@ -22,7 +22,7 @@ public class LoadScreen : MonoBehaviour
 
             if(loadAsync.progress>= .9f && !loadAsync.allowSceneActivation)
             {
-                yield return new WaitForSeconds(2.5f);
+                yield return new WaitForSeconds(1.5f);
                 loadAsync.allowSceneActivation=true;
             }
             yield return null;

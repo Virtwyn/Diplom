@@ -47,7 +47,6 @@ public class Door : MonoBehaviour
 
         if (KeyCount.Instance == null)
         {
-            Debug.LogWarning("KeyCount не найден на сцене.");
             return;
         }
 

@@ -18,4 +18,9 @@ public class CharacterAnimations : MonoBehaviour
     {
         _animator.SetTrigger("Jump");
     }
+    public void ResetJumpState()
+    {
+        _animator.ResetTrigger("Jump");
+        _animator.SetBool("IsFlying", false);
+    }
 }

@@ -23,7 +23,6 @@ public class KeyPickup : MonoBehaviour
 
         if (KeyCount.Instance == null)
         {
-            Debug.LogWarning("KeyCount не найден на сцене.");
             return;
         }
 
